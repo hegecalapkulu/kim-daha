@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Kim Daha? — Giriş Sahnesi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0F1B3D; --navy2:#16244d; --white:#FFFFFF; --pink:#FF3D8B; --pink-d:#d92a72;
+  --ink-2:rgba(255,255,255,.62); --ink-3:rgba(255,255,255,.38);
+  --glass:rgba(255,255,255,.06); --glass-b:rgba(255,255,255,.12);
+  --mono:'Geist Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{background:var(--navy);color:var(--white);font-family:'Geist',system-ui,sans-serif;overflow-x:hidden;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+button,input,textarea{font:inherit;color:inherit}
+button{border:0;background:none;cursor:pointer}
+.hidden{display:none!important}
+
+.bg{position:fixed;inset:0;overflow:hidden;z-index:0;pointer-events:none}
+.bg i{position:absolute;border-radius:40%;filter:blur(70px);animation:drift 18s ease-in-out infinite alternate}
+.bg .b1{width:46vmax;height:46vmax;background:#FF3D8B;left:-18vmax;top:-20vmax;opacity:.32}
+.bg .b2{width:40vmax;height:40vmax;background:#3a5bd9;right:-16vmax;top:10vh;opacity:.38;animation-duration:22s}
+.bg .b3{width:36vmax;height:36vmax;background:#7b3fd1;left:20vw;bottom:-24vmax;opacity:.3;animation-duration:26s}
+@keyframes drift{to{transform:translate(6vmax,4vmax) rotate(25deg)}}
+.grain{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.07;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+.wrap{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:0 16px 120px}
+header{display:flex;align-items:center;justify-content:space-between;height:60px}
+.logo{font-weight:500;font-size:18px;letter-spacing:-.03em}
+.logo b{color:var(--pink);font-weight:600}
+.meta{font-size:13px;color:var(--ink-2);display:flex;gap:10px;align-items:center}
+.icon{width:36px;height:36px;border-radius:6px;border:1px solid var(--glass-b);background:var(--glass)}
+.icon.on{background:var(--pink);border-color:var(--pink)}
+.fast .step.on{animation-duration:.15s}
+.fast .seat.in{animation-duration:.2s}
+.rule{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;color:var(--ink-3);margin:6px 0 12px;text-transform:uppercase}
+.rule:after{content:"";flex:1;height:1px;background:var(--glass-b)}
+h2{font-size:clamp(30px,6vw,48px);font-weight:400;letter-spacing:-.045em;line-height:1.02;margin:4px 0 8px}
+h2 em{font-style:normal;color:var(--pink)}
+h3{font-size:20px;font-weight:500;letter-spacing:-.03em;margin:0}
+.sub{color:var(--ink-2);margin:0 0 22px;font-size:15px;line-height:1.45}
+.glass{background:linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,.03));border:1px solid var(--glass-b);border-radius:14px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:54px;padding:0 22px;border-radius:6px;font-weight:500;font-size:16px;letter-spacing:-.01em;transition:transform .1s,opacity .25s,background .2s;text-decoration:none}
+.btn:active{transform:scale(.97)}
+.btn.w{background:var(--white);color:var(--navy)}
+.btn.g{background:var(--glass);border:1px solid var(--glass-b);color:#fff}
+.btn.full{width:100%}
+.btn[disabled]{opacity:.3;pointer-events:none}
+.btn .arr{font-family:var(--mono)}
+
+.step{display:none}
+.step.on{display:block;animation:stepIn .55s cubic-bezier(.2,.9,.25,1) both}
+@keyframes stepIn{from{opacity:0;transform:translateY(18px)}}
+
+/* ---------- AÇILIŞ ---------- */
+.floaters{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0;transition:opacity .4s}
+.floaters.off{opacity:0;visibility:hidden}
+.fl{position:absolute;width:150px;padding:12px;border-radius:12px;font-size:12px;line-height:1.3;animation:float 9s ease-in-out infinite alternate}
+.fl.pk{background:var(--pink);box-shadow:0 20px 40px -18px var(--pink)}
+.fl.gl{background:rgba(255,255,255,.08);border:1px solid var(--glass-b);backdrop-filter:blur(10px)}
+.fl .ft{display:flex;align-items:center;gap:6px;font-weight:600}
+.fl svg{width:30px;height:30px}
+.fl.far{filter:blur(5px);opacity:.55;transform:scale(.85)}
+.fl.mid{filter:blur(1.5px);opacity:.85}
+@keyframes float{to{transform:translateY(-22px) rotate(3deg)}}
+.hero{position:relative;z-index:2;min-height:calc(100vh - 160px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 0}
+.hero h1{font-size:clamp(64px,16vw,150px);font-weight:400;letter-spacing:-.07em;line-height:.9;margin:0}
+.hero h1 b{color:var(--pink);font-weight:400}
+.hero p{max-width:420px;color:var(--ink-2);margin:18px auto 28px;font-size:16px;line-height:1.45}
+.hero .acts{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.joinbox{margin-top:18px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.codeboxes{display:flex;gap:8px}
+.codeboxes input{width:56px;height:66px;text-align:center;font-family:var(--mono);font-size:28px;text-transform:uppercase;border-radius:8px;border:1px solid var(--glass-b);background:rgba(255,255,255,.07);outline:none;caret-color:var(--pink)}
+.codeboxes input:focus{border-color:var(--pink);box-shadow:0 0 0 3px rgba(255,61,139,.25)}
+
+/* ---------- masa ---------- */
+.table{position:relative;width:100%;aspect-ratio:1.25;max-width:640px;margin:0 auto}
+@media (min-width:900px){.table{aspect-ratio:1.05}}
+.felt{position:absolute;left:14%;right:14%;top:20%;bottom:20%;border-radius:50%;background:radial-gradient(ellipse at 50% 35%,rgba(255,255,255,.12),rgba(255,255,255,.03) 70%);border:1px solid var(--glass-b);box-shadow:inset 0 0 60px rgba(255,61,139,.10),0 40px 80px -30px rgba(0,0,0,.7)}
+.felt:after{content:"";position:absolute;inset:10%;border-radius:50%;border:1px dashed rgba(255,255,255,.10)}
+.center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center}
+.seat{position:absolute;width:88px;margin:-44px 0 0 -44px;text-align:center}
+.seat .av{width:62px;height:62px;display:block;margin:0 auto;filter:drop-shadow(0 8px 14px rgba(0,0,0,.35))}
+.seat .nm{font-size:13px;color:var(--ink-2);white-space:nowrap}
+.seat.me .nm{color:#fff;font-weight:500}
+.seat.empty .av{opacity:.18;filter:none}
+.seat.empty .nm{color:var(--ink-3);font-size:12px}
+.seat.in{animation:sitdown .7s cubic-bezier(.3,1.6,.5,1) both}
+.seat.bump .av{animation:popc .45s cubic-bezier(.3,1.8,.5,1)}
+@keyframes sitdown{0%{transform:translateY(-60px) scale(.3);opacity:0}60%{opacity:1}100%{transform:none}}
+.seat .ok{position:absolute;top:2px;right:14px;width:20px;height:20px;border-radius:50%;background:var(--pink);font-size:11px;line-height:20px;transform:scale(0);transition:transform .35s cubic-bezier(.3,1.8,.5,1)}
+.seat.done .ok{transform:scale(1)}
+.seat .crown{position:absolute;left:8px;top:0;font-size:14px}
+@media (min-width:900px){.seat{width:110px;margin:-55px 0 0 -55px}.seat .av{width:80px;height:80px}.seat .nm{font-size:14px}}
+.pupils{transition:transform .45s cubic-bezier(.3,1.4,.5,1)}
+.count{font-size:13px;color:var(--ink-3)}
+
+/* ---------- LOBİ ---------- */
+.lobby{display:grid;gap:18px;grid-template-areas:"code" "table" "me" "set"}
+.lobby .a-code{grid-area:code}.lobby .a-table{grid-area:table}.lobby .a-me{grid-area:me}.lobby .a-set{grid-area:set}
+@media (min-width:900px){.lobby{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);grid-template-areas:"code table" "me table" "me set";gap:22px 44px;align-items:start}}
+.codecard{display:flex;align-items:center;gap:16px;padding:16px}
+.codecard .code{font-family:var(--mono);font-size:44px;letter-spacing:.14em;line-height:1}
+.codecard .code span{color:var(--pink)}
+.codecard .qr{margin-left:auto;background:#fff;border-radius:8px;padding:6px;line-height:0}
+.codecard .qr img,.codecard .qr canvas{width:84px!important;height:84px!important}
+.codecard small{display:block;font-size:12px;color:var(--ink-3);margin-bottom:6px}
+.sharerow{display:flex;gap:8px;margin-top:10px}
+.sharerow .btn{flex:1;height:44px;font-size:14px}
+
+.mecard{padding:16px}
+.mehead{display:flex;gap:14px;align-items:center}
+.mini-prev{position:relative;width:96px;height:96px;flex:none}
+.mini-prev:before{content:"";position:absolute;inset:6%;border-radius:50%;background:radial-gradient(circle,rgba(255,61,139,.35),transparent 65%);filter:blur(8px)}
+.mini-prev svg{position:relative;width:100%;height:100%;filter:drop-shadow(0 14px 18px rgba(0,0,0,.45));animation:breathe 3.2s ease-in-out infinite}
+.mini-prev.pop svg{animation:popc .45s cubic-bezier(.3,1.8,.5,1)}
+@keyframes breathe{50%{transform:translateY(-4px)}}
+@keyframes popc{0%{transform:scale(.85)}100%{transform:scale(1)}}
+.namef{flex:1;min-width:0}
+.namef label{display:block;font-size:12px;color:var(--ink-3);margin-bottom:6px}
+.namef input{width:100%;height:50px;border-radius:8px;border:1px solid var(--glass-b);background:rgba(255,255,255,.06);padding:0 14px;font-size:18px;letter-spacing:-.02em;outline:none}
+.namef input:focus{border-color:var(--pink)}
+.dice{margin-top:8px;font-size:13px;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--glass-b);margin:16px 0 12px;overflow-x:auto;scrollbar-width:none}
+.tabs button{padding:10px 12px;font-size:14px;color:var(--ink-3);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tabs button.on{color:var(--white);border-color:var(--pink)}
+.hcols{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.hcols button{width:30px;height:30px;border-radius:50%;box-shadow:inset 0 -4px 0 rgba(0,0,0,.15);outline-offset:2px}
+.hcols button.on{outline:2px solid var(--pink)}
+.opts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media (min-width:560px){.opts{grid-template-columns:repeat(5,1fr)}}
+.opt{position:relative;aspect-ratio:1;border-radius:10px;background:var(--glass);border:1px solid var(--glass-b);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px;transition:border-color .2s,transform .15s}
+.opt:active{transform:scale(.94)}
+.opt svg{width:74%;height:74%}
+.opt small{font-size:10.5px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.opt.on{border-color:var(--pink);background:rgba(255,61,139,.12)}
+.opt.on:after{content:"";position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--pink)}
+.opt.taken{pointer-events:none}
+.opt.taken > svg,.opt.taken > .swatch{opacity:.22;filter:grayscale(.6)}
+.opt .owner{position:absolute;inset:auto 4px 4px auto;display:flex;align-items:center;gap:3px;font-size:9.5px;color:var(--ink-2);background:rgba(15,27,61,.85);border-radius:99px;padding:1px 6px 1px 1px}
+.opt .owner svg{width:16px;height:16px}
+.swatch{width:62%;aspect-ratio:1;border-radius:50%;box-shadow:inset 0 -6px 0 rgba(0,0,0,.12)}
+
+.set{padding:4px 16px}
+.set .row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--glass-b)}
+.set .row:last-child{border:0}
+.set .row .l{font-size:15px}
+.set .row .l small{display:block;color:var(--ink-3);font-size:12.5px;margin-top:2px;line-height:1.35}
+.seg{display:inline-flex;border:1px solid var(--glass-b);border-radius:6px;padding:3px;gap:2px;flex:none}
+.seg button{padding:7px 11px;border-radius:4px;font-size:13px;color:var(--ink-2);white-space:nowrap}
+.seg button.on{background:var(--white);color:var(--navy)}
+.sw{flex:none;width:50px;height:28px;border-radius:99px;background:rgba(255,255,255,.15);position:relative;transition:.25s}
+.sw:after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.25s cubic-bezier(.3,1.5,.5,1)}
+.sw.on{background:var(--pink)}
+.sw.on:after{left:25px}
+.ro .seg,.ro .sw,.ro .mode{pointer-events:none}
+.waiting{display:flex;align-items:center;gap:10px;justify-content:center;color:var(--ink-2);height:54px;border:1px solid var(--glass-b);border-radius:6px}
+.dots i{display:inline-block;width:6px;height:6px;margin:0 2px;border-radius:50%;background:var(--ink-2);animation:bd 1s infinite}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes bd{50%{transform:translateY(-5px);opacity:.4}}
+
+/* ---------- MOD ---------- */
+.modewrap{max-width:760px;margin:0 auto;padding-top:8px}
+.modes{display:grid;gap:12px}
+@media (min-width:640px){.modes{grid-template-columns:1fr 1fr}}
+.mode{text-align:left;border-radius:14px;border:1px solid var(--glass-b);background:var(--glass);padding:22px;transition:.25s;position:relative;overflow:hidden}
+.mode .e{font-size:34px}
+.mode b{display:block;font-weight:500;font-size:22px;margin:14px 0 6px;letter-spacing:-.03em}
+.mode small{color:var(--ink-2);font-size:14px;line-height:1.45;display:block}
+.mode.on{border-color:var(--pink);background:rgba(255,61,139,.13);box-shadow:0 20px 50px -30px var(--pink)}
+.mode.on:after{content:"✓";position:absolute;top:16px;right:16px;width:26px;height:26px;border-radius:50%;background:var(--pink);font-size:13px;line-height:26px;text-align:center}
+.ro .mode:not(.on){opacity:.4}
+
+/* ---------- SORU YAZ ---------- */
+.writer{display:grid;gap:20px}
+@media (min-width:900px){.writer{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:28px 44px;align-items:start}}
+.qedit{position:relative;padding:22px;border-radius:14px;background:var(--pink);background-image:radial-gradient(120% 80% at 50% 0%,rgba(255,255,255,.25),transparent 60%);box-shadow:0 30px 60px -30px var(--pink);transition:transform .8s cubic-bezier(.5,0,.2,1),opacity .4s}
+.qedit .tag{font-size:12px;opacity:.85}
+.qedit textarea{display:block;width:100%;min-height:120px;margin-top:10px;border:0;outline:none;background:transparent;resize:none;font-size:clamp(26px,5.6vw,36px);line-height:1.1;letter-spacing:-.04em;color:#fff}
+.qedit textarea::placeholder{color:rgba(255,255,255,.6)}
+.qedit .cnt{position:absolute;right:16px;bottom:12px;font-family:var(--mono);font-size:11px;opacity:.75}
+.ideas{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.ideas button{border:1px solid var(--glass-b);background:var(--glass);border-radius:99px;padding:8px 12px;font-size:13px;color:var(--ink-2)}
+.pile{position:absolute;left:50%;top:50%;width:0;height:0}
+.pile .mini{position:absolute;width:40px;height:56px;margin:-28px 0 0 -20px;border-radius:6px;animation:land .35s ease-out both}
+@keyframes land{from{transform:var(--r) scale(1.3);opacity:.4}to{transform:var(--r)}}
+.back{background:var(--navy2);border:1.5px solid var(--pink);background-image:radial-gradient(circle at 50% 50%,rgba(255,61,139,.35) 0 18%,transparent 19%),repeating-linear-gradient(45deg,rgba(255,61,139,.14) 0 4px,transparent 4px 10px)}
+.flyer{position:fixed;z-index:50;pointer-events:none;border-radius:12px;transition:transform .85s cubic-bezier(.5,0,.2,1)}
+.sent{display:none;align-items:center;justify-content:center;gap:8px;height:54px;border:1px solid var(--glass-b);border-radius:6px;color:var(--ink-2);margin-top:14px}
+.sent.on{display:flex}
+
+/* ---------- DESTE ---------- */
+.deck{position:absolute;left:50%;top:50%;width:0;height:0}
+.deck .dc{position:absolute;border-radius:8px;transition:transform .45s cubic-bezier(.4,1.4,.5,1)}
+.shufflecap{position:absolute;left:0;right:0;bottom:6%;text-align:center;font-size:14px;color:var(--ink-2)}
+.ready{max-width:520px;margin:18px auto 0;text-align:center}
+.packwrap{padding:14px 0;border-bottom:1px solid var(--glass-b)}
+.ph{font-size:15px;margin-bottom:10px}
+.ph small{display:block;color:var(--ink-3);font-size:12.5px;margin-top:2px;line-height:1.35}
+.packs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pack{position:relative;text-align:left;border:1px solid var(--glass-b);border-radius:10px;background:var(--glass);padding:10px 10px 9px;transition:.2s}
+.pack .e{font-size:20px;line-height:1}
+.pack b{display:block;font-size:13.5px;font-weight:500;letter-spacing:-.01em;margin-top:6px}
+.pack small{display:block;font-size:11px;color:var(--ink-3);margin-top:1px}
+.pack.on{border-color:var(--pink);background:rgba(255,61,139,.13)}
+.pack.played:not(.on){opacity:.5}
+.pack .pl{position:absolute;top:7px;right:8px;font-size:10px;color:var(--ink-2)}
+.packreset{margin-top:10px;font-size:12px;color:var(--ink-3);text-decoration:underline;text-underline-offset:3px}
+.ro .pack,.ro .packreset{pointer-events:none}
+.deck .dc.tapme{cursor:pointer;animation:tapglow 1.4s ease-in-out infinite}
+@keyframes tapglow{0%,100%{box-shadow:0 0 0 0 rgba(255,61,139,0),0 18px 30px -12px rgba(0,0,0,.6)}50%{box-shadow:0 0 0 6px rgba(255,61,139,.35),0 18px 30px -12px rgba(0,0,0,.6)}}
+.tapcap{position:absolute;left:0;top:0;transform:translateX(-50%);font-size:13px;color:#fff;background:var(--pink);border-radius:99px;padding:5px 12px;white-space:nowrap;pointer-events:none;z-index:6;animation:capin .4s both}
+@keyframes capin{from{opacity:0;margin-top:8px}}
+.deck .dc.opening{transition:transform .6s cubic-bezier(.5,0,.2,1)!important;z-index:9}
+
+/* ---------- demo gezinme (normal yazı) ---------- */
+.nav{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;display:flex;gap:2px;padding:5px;border-radius:10px;background:rgba(15,27,61,.85);border:1px solid var(--glass-b);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);max-width:calc(100% - 24px);overflow-x:auto;scrollbar-width:none}
+.nav button{font-size:13.5px;font-weight:500;letter-spacing:-.01em;color:var(--ink-2);padding:8px 12px;border-radius:6px;white-space:nowrap}
+.nav button.on{background:var(--white);color:var(--navy)}
+.nav .sep{width:1px;background:var(--glass-b);margin:4px 2px;flex:none}
+.toast{position:fixed;left:50%;top:70px;transform:translate(-50%,-20px);background:var(--white);color:var(--navy);padding:10px 16px;border-radius:6px;font-size:14px;font-weight:500;opacity:0;transition:.3s;z-index:40;pointer-events:none}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- yatay telefon: iki sütun, masa ekran yüksekliğine sığar ---------- */
+@media (orientation:landscape) and (max-height:520px){
+  .wrap{padding:0 max(16px,env(safe-area-inset-right)) 80px max(16px,env(safe-area-inset-left))}
+  header{height:46px}
+  .hero{min-height:calc(100vh - 110px);padding:6px 0}.hero h1{font-size:min(17vh,96px)}.hero p{margin:10px auto 14px;font-size:14px}
+  .btn{height:46px}
+  .lobby{grid-template-columns:minmax(0,1fr) minmax(0,.95fr);grid-template-areas:"code table" "me table" "set table";gap:10px 20px;align-items:start}
+  .lobby .a-table{position:sticky;top:4px}
+  .writer{grid-template-columns:minmax(0,1fr) minmax(0,.95fr);gap:10px 20px;align-items:start}
+  .writer > div:last-child{position:sticky;top:4px}
+  .table{aspect-ratio:auto;height:calc(100vh - 60px);max-width:none}
+  #deckTable{height:calc(100vh - 150px);max-width:520px}
+  .seat{width:72px;margin:-30px 0 0 -36px}.seat .av{width:44px;height:44px}.seat .nm{font-size:11px}
+  .codecard{padding:10px 12px}.codecard .code{font-size:30px}.codecard .qr img,.codecard .qr canvas{width:60px!important;height:60px!important}
+  .sharerow .btn{height:38px}
+  h2{font-size:28px}.sub{margin-bottom:12px;font-size:14px}
+  .qedit{padding:14px}.qedit textarea{min-height:70px;font-size:22px}
+  .modes{grid-template-columns:1fr 1fr}.mode{padding:14px}.mode b{font-size:17px;margin:8px 0 4px}.mode small{font-size:12.5px}
+  .packs{grid-template-columns:repeat(5,1fr)}
+  .nav{bottom:6px;padding:3px}.nav button{padding:6px 10px;font-size:12.5px}
+}
+</style>
+</head>
+<body>
+<div class="bg"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
+<div class="grain"></div>
+<div class="floaters" id="floaters"></div>
+<div class="wrap">
+  <header>
+    <div class="logo">Kim Daha<b>?</b></div>
+    <div class="meta"><span id="hdrRoom"></span><div id="meMenu"></div></div>
+  </header>
+
+  <!-- AÇILIŞ -->
+  <section class="step on" id="acilis">
+    <div class="hero">
+      <h1>Kim<br>daha<b>?</b></h1>
+      <p>Soru kartı açılır, herkes gizlice birini seçer. Kartlar tek tek açıldığında masada kıyamet kopar.</p>
+      <div class="acts" id="heroActs">
+        <button class="btn w" id="btnCreate">Oda aç <span class="arr">→</span></button>
+        <button class="btn g" id="btnJoin">Odaya katıl</button>
+      </div>
+      <div class="joinbox hidden" id="joinBox">
+        <div class="codeboxes" id="codeBoxes"><input maxlength="1" autocapitalize="characters" aria-label="1. harf"><input maxlength="1" autocapitalize="characters" aria-label="2. harf"><input maxlength="1" autocapitalize="characters" aria-label="3. harf"><input maxlength="1" autocapitalize="characters" aria-label="4. harf"></div>
+        <button class="btn w" id="btnJoinGo" disabled>Masaya git <span class="arr">→</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOBİ (karakter burada seçilir) -->
+  <section class="step" id="lobi">
+    <div class="lobby">
+      <div class="a-code">
+        <div class="rule">Lobi</div>
+        <div class="glass codecard">
+          <div><small>Oda kodu</small><div class="code">KE<span>D</span>I</div></div>
+          <div class="qr" id="qr"></div>
+        </div>
+        <div class="sharerow"><button class="btn g" id="btnShare">Linki paylaş</button><button class="btn g" id="btnCopy">Kopyala</button></div>
+      </div>
+
+      <div class="a-table">
+        <div class="table" id="lobbyTable"><div class="felt"></div>
+          <div class="center"><div class="count" id="lobbyCount">1 / 8</div></div>
+        </div>
+      </div>
+
+      <div class="a-me">
+        <div class="rule">Karakterin</div>
+        <div class="glass mecard">
+          <div class="mehead">
+            <div class="mini-prev" id="preview"></div>
+            <div class="namef"><label for="nameInp">Adın</label><input id="nameInp" maxlength="14" placeholder="Masada görünecek ad" autocomplete="nickname">
+              <button class="dice" id="dice">🎲 Rastgele karakter</button></div>
+          </div>
+          <div class="tabs" id="tabs">
+            <button data-t="skin" class="on">Renk</button><button data-t="hair">Saç</button><button data-t="acc">Aksesuar</button><button data-t="eyes">Gözler</button><button data-t="mouth">Ağız</button>
+          </div>
+          <div id="hairCols" class="hcols hidden"></div>
+          <div class="opts" id="opts"></div>
+        </div>
+      </div>
+
+      <div class="a-set">
+        <div class="rule">Ayarlar <span id="setOwner" style="text-transform:none"></span></div>
+        <div class="glass set" id="settings">
+          <div class="row"><div class="l">Seçim süresi<small>Son 5 saniyede saat tıkırdar</small></div>
+            <div class="seg" data-k="time"><button data-v="15">15 sn</button><button data-v="20" class="on">20 sn</button><button data-v="30">30 sn</button></div></div>
+        </div>
+        <div style="margin-top:16px" id="startBox"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MOD (oyun başında bir kez) -->
+  <section class="step" id="mod">
+    <div class="modewrap">
+      <div class="rule">Oyun modu</div>
+      <h2>Bu oyunu nasıl <em>oynuyoruz?</em></h2>
+      <p class="sub" id="modSub">Bir kez seçilir, oyun bitene kadar değişmez.</p>
+      <div id="modBox">
+        <div class="modes">
+          <button class="mode on" data-mode="kendi"><span class="e">✍️</span><b>Kendi kartlarımız</b><small>Her tur başında herkes masaya bir soru kartı koyar. Kimin yazdığı bilinmez, kartlar karışık açılır.</small></button>
+          <button class="mode" data-mode="hazir"><span class="e">🃏</span><b>Hazır deste</b><small>418 soru, 19 kategori. Biri oyların çoğunu toplarsa kategorinin tepkisi çıkar.</small></button>
+        </div>
+        <div class="glass set" id="hazirSet" style="margin-top:14px">
+          <div class="packwrap">
+            <div class="ph">Soru paketi<small>9 ayrı paket, hiçbir soru iki pakette yok. Oynadığınız paketler işaretlenir.</small></div>
+            <div class="packs" id="packs"></div>
+            <button class="packreset" id="packReset">Paket geçmişini sıfırla</button>
+          </div>
+          <div class="row"><div class="l">Baharatlı sorular 🌶️<small>+18 imalı sorular desteye karışır</small></div><button class="sw" data-k="spicy" aria-label="Baharatlı"></button></div>
+          <div class="row"><div class="l">Kaç soru?</div>
+            <div class="seg" data-k="rounds"><button data-v="10">10</button><button data-v="20" class="on">20</button><button data-v="30">30</button><button data-v="hepsi">Hepsi</button></div></div>
+        </div>
+        <div class="glass set" id="animSet" style="margin-top:14px">
+          <div class="row"><div class="l">Animasyonlar<small>Herkes için geçerli, oyun boyunca değişmez. Hızlı modda kart açma gösterileri atlanır.</small></div>
+            <div class="seg" data-k="anim"><button data-v="tam" class="on">Tam</button><button data-v="hizli">Hızlı ⚡</button></div></div>
+        </div>
+      </div>
+      <div style="margin-top:18px" id="modGo"></div>
+    </div>
+  </section>
+
+  <!-- SORU YAZ -->
+  <section class="step" id="yaz">
+    <div class="writer">
+      <div>
+        <div class="rule">Tur 01 · Soru kartı</div>
+        <h2>Masaya bir <em>soru</em> koy</h2>
+        <p class="sub">Kimse kimin yazdığını bilmeyecek. Kartlar karıştırılıp rastgele açılacak.</p>
+        <div class="qedit" id="qedit">
+          <div class="tag">Gizli soru kartı</div>
+          <textarea id="qtext" maxlength="110" placeholder="Sence kim…?"></textarea>
+          <div class="cnt" id="qcnt">0 / 110</div>
+        </div>
+        <div class="ideas" id="ideas">
+          <button>Sence kim…</button><button>Kimin gizli gizli…</button><button>Sence kim zor durumda…</button><button>Kim 10 yıl sonra…</button><button>Kimin telefonunda…</button>
+        </div>
+        <button class="btn w full" id="btnPut" disabled>Kartı masaya koy <span class="arr">→</span></button>
+        <div class="sent" id="sent">Kartın masada <span style="color:var(--pink)">✓</span> Diğerleri yazıyor…</div>
+      </div>
+      <div>
+        <div class="table" id="writeTable"><div class="felt"></div><div class="pile" id="wpile"></div>
+          <div class="center" style="transform:translate(-50%,40px)"><div class="count" id="wcount">0 / 6 kart</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DESTE -->
+  <section class="step" id="karistir">
+    <div class="rule">Deste</div>
+    <div class="table" id="deckTable" style="max-width:620px"><div class="felt"></div><div class="deck" id="deck"></div><div class="shufflecap" id="shcap">Kartlar karıştırılıyor…</div></div>
+    <div class="ready hidden" id="ready">
+      <h2>Tur 01 <em>hazır</em></h2>
+      <p class="sub" id="readySub"></p>
+      <div class="glass set" id="anonSet" style="text-align:left">
+        <div class="row"><div class="l">Bu turun oyları<small>Kart açılınca bu tur için kilitlenir</small></div>
+          <div class="seg" data-k="anon"><button data-v="1" class="on">🔒 Anonim</button><button data-v="0">👁 Açık oy</button></div></div>
+        <div class="row"><div class="l">Animasyonlar<small>Değiştirmediğin sürece sonraki turlarda da sürer</small></div>
+          <div class="seg" data-k="anim"><button data-v="tam">Tam</button><button data-v="hizli">Hızlı ⚡</button></div></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="nav" id="nav">
+  <button data-go="acilis" class="on">Açılış</button><button data-go="lobi">Lobi</button><button data-go="mod">Mod seçimi</button><button data-go="yaz">Soru yazma</button><button data-go="karistir">Deste</button>
+  <span class="sep"></span><button id="roleBtn">👑 Yönetici gözünden</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="../vendor/qrcode.min.js"></script>
+<script src="ortak.js"></script>
+<script src="sorular.js"></script>
+<script>
+const toast = m => { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), 1800); };
+
+/* durum */
+const me = { name: '', skin: SKINS[0], hair: 'short', hairColor: HAIR_COLORS[0], eyes: 'normal', mouth: 'grin', acc: 'shades' };
+let isHost = true;
+const settings = { mode: 'kendi', spicy: false, time: '20', rounds: '20', anim: fast ? 'hizli' : 'tam', anon: '1', pack: 0 };
+// oynanan paketler bu cihazda (yöneticide) saklanır; sıradaki oynanmamış paket seçili gelir
+let played = []; try { played = JSON.parse(localStorage.getItem('kd_played') || '[]'); } catch {}
+const firstUnplayed = () => { const i = PAKETLER.findIndex((_, k) => !played.includes(k)); return i < 0 ? 0 : i; };
+settings.pack = firstUnplayed();
+const FRIENDS = [
+  { name: 'Ahmet', skin: SKINS[1], hair: 'short', hairColor: HAIR_COLORS[1], eyes: 'normal', mouth: 'smirk', acc: 'cap' },
+  { name: 'Zeynep', skin: SKINS[4], hair: 'long', hairColor: HAIR_COLORS[2], eyes: 'lashes', mouth: 'smile', acc: 'bow' },
+  { name: 'Can', skin: SKINS[2], hair: 'curly', hairColor: HAIR_COLORS[3], eyes: 'normal', mouth: 'o', acc: 'party' },
+  { name: 'Elif', skin: SKINS[5], hair: 'pigtails', hairColor: HAIR_COLORS[1], eyes: 'lashes', mouth: 'tongue', acc: 'catears' },
+  { name: 'Mert', skin: SKINS[3], hair: 'spiky', hairColor: HAIR_COLORS[0], eyes: 'sleepy', mouth: 'flat', acc: 'horns' },
+];
+let timers = [];
+const later = (ms, fn) => timers.push(setTimeout(fn, ms));
+const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+
+/* gezinme */
+const enter = {};
+let cur = 'acilis';
+function go(id) {
+  clearTimers(); cur = id;
+  $$('.step').forEach(s => s.classList.toggle('on', s.id === id));
+  $$('#nav [data-go]').forEach(b => b.classList.toggle('on', b.dataset.go === id));
+  $('#hdrRoom').textContent = id === 'acilis' ? '' : 'Oda KEDI';
+  $('#floaters').classList.toggle('off', id !== 'acilis');
+  window.scrollTo(0, 0);
+  enter[id] && enter[id]();
+}
+$('#nav').onclick = e => { const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); };
+$('#roleBtn').onclick = () => { isHost = !isHost; $('#roleBtn').textContent = isHost ? '👑 Yönetici gözünden' : '🙋 Oyuncu gözünden'; toast(isHost ? 'Yönetici gözünden' : 'Oyuncu gözünden'); go(cur); };
+
+/* ---------- açılış ---------- */
+const FLOAT = [
+  { t: 'Sence kim zombi kıyametinde ilk ölür?', x: 4, y: 8, k: 'gl mid' }, { n: 'Zeynep', c: FRIENDS[1], x: 74, y: 6, k: 'pk' },
+  { t: 'Kimin gizlice eskisini stalkladığını düşünüyorsun?', x: 70, y: 66, k: 'gl' }, { n: 'Can', c: FRIENDS[2], x: 8, y: 70, k: 'pk mid' },
+  { t: 'Sence kim 3 lira için IBAN atar?', x: 40, y: -2, k: 'gl far' }, { n: 'Mert', c: FRIENDS[4], x: 86, y: 38, k: 'pk far' },
+  { n: 'Elif', c: FRIENDS[3], x: -4, y: 40, k: 'pk far' }, { t: 'Sence kim hesap gelince tuvalete kaçar?', x: 38, y: 84, k: 'gl far' },
+];
+enter.acilis = () => {
+  $('#floaters').innerHTML = FLOAT.map((f, i) => `<div class="fl ${f.k}" style="left:${f.x}%;top:${f.y}%;animation-delay:${-i * 1.3}s">${f.n ? `<div class="ft">${avatar(f.c)}${f.n}</div>` : f.t}</div>`).join('');
+  $('#joinBox').classList.add('hidden'); $('#heroActs').classList.remove('hidden');
+};
+$('#btnCreate').onclick = () => { isHost = true; $('#roleBtn').textContent = '👑 Yönetici gözünden'; sfx.whoosh(); go('lobi'); };
+$('#btnJoin').onclick = () => { $('#heroActs').classList.add('hidden'); $('#joinBox').classList.remove('hidden'); $('#codeBoxes input').focus(); sfx.soft(); };
+const cbs = $$('#codeBoxes input');
+cbs.forEach((inp, i) => {
+  inp.oninput = () => {
+    inp.value = inp.value.toLocaleUpperCase('tr').replace(/İ/g, 'I').replace(/[^A-Z]/g, '').slice(-1);
+    if (inp.value) { sfx.soft(); if (cbs[i + 1]) cbs[i + 1].focus(); }
+    $('#btnJoinGo').disabled = cbs.some(c => !c.value);
+  };
+  inp.onkeydown = e => { if (e.key === 'Backspace' && !inp.value && cbs[i - 1]) cbs[i - 1].focus(); if (e.key === 'Enter' && !$('#btnJoinGo').disabled) $('#btnJoinGo').click(); };
+});
+$('#btnJoinGo').onclick = () => { isHost = false; $('#roleBtn').textContent = '🙋 Oyuncu gözünden'; sfx.whoosh(); go('lobi'); };
+
+/* ---------- masa yardımcıları ---------- */
+function seatXY(i, n) { const a = Math.PI / 2 + (i / n) * Math.PI * 2; return { x: 50 + Math.cos(a) * 40, y: 50 + Math.sin(a) * 38 }; }
+function lookAt(tableSel, fromIdx, toIdx, seats) {
+  const el = $(`${tableSel} .seat[data-i="${fromIdx}"] .pupils`); if (!el) return;
+  if (toIdx == null) { el.style.transform = ''; return; }
+  const a = seats[fromIdx], b = seats[toIdx]; const dx = b.x - a.x, dy = (b.y - a.y) * .8, L = Math.hypot(dx, dy) || 1;
+  el.style.transform = `translate(${(dx / L * 3.6).toFixed(2)}px,${(dy / L * 3.2).toFixed(2)}px)`;
+}
+
+/* ---------- LOBİ: masa ---------- */
+const MAXP = 8;
+let joined = [], lseats = [];
+const takenBy = key => { const m = {}; joined.forEach(f => { if (f[key] && f[key] !== 'none') m[f[key]] = f; }); return m; };
+function drawLobbyTable(anim) {
+  const t = $('#lobbyTable'); $$('.seat', t).forEach(s => s.remove());
+  lseats = []; for (let i = 0; i < MAXP; i++) lseats.push(seatXY(i, MAXP));
+  const people = [me, ...joined];
+  for (let i = 0; i < MAXP; i++) {
+    const p = people[i], s = document.createElement('div');
+    s.className = 'seat' + (i === 0 ? ' me' : '') + (p ? '' : ' empty') + (anim && anim.i === i ? ' ' + anim.cls : '');
+    s.dataset.i = i; s.style.left = lseats[i].x + '%'; s.style.top = lseats[i].y + '%';
+    const hostHere = isHost ? i === 0 : i === 1;
+    s.innerHTML = p ? avatar(p, { cls: 'av' }) + `<div class="nm">${i === 0 ? (esc(me.name) || 'Sen') : esc(p.name)}</div>` + (hostHere ? '<span class="crown">👑</span>' : '')
+      : `<svg class="av" viewBox="0 0 100 100"><circle cx="50" cy="55" r="34" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="6 6"/></svg><div class="nm">boş</div>`;
+    t.appendChild(s);
+  }
+  $('#lobbyCount').textContent = people.length + ' / ' + MAXP;
+}
+function everyoneLooksAt(idx) {
+  const n = 1 + joined.length;
+  for (let i = 0; i < n; i++) if (i !== idx) later(120 + Math.random() * 300, () => lookAt('#lobbyTable', i, idx, lseats));
+  later(2600, () => { for (let i = 0; i < n; i++) lookAt('#lobbyTable', i, null, lseats); });
+}
+
+/* ---------- LOBİ: karakterin ---------- */
+let tab = 'skin';
+function drawPreview(pop) {
+  $('#preview').innerHTML = avatar(me);
+  if (pop) { $('#preview').classList.remove('pop'); void $('#preview').offsetWidth; $('#preview').classList.add('pop'); }
+}
+function ownerTag(f) { return `<span class="owner">${avatar(f)}${esc(f.name)}</span>`; }
+function drawOpts() {
+  const box = $('#opts'), hc = $('#hairCols');
+  hc.classList.toggle('hidden', tab !== 'hair');
+  if (tab === 'hair') hc.innerHTML = HAIR_COLORS.map(c => `<button class="${me.hairColor === c ? 'on' : ''}" data-hc="${c}" style="background:${c}" aria-label="Saç rengi"></button>`).join('');
+  if (tab === 'skin') {
+    const tk = takenBy('skin');
+    box.innerHTML = SKINS.map(s => `<button class="opt ${me.skin === s ? 'on' : ''} ${tk[s] ? 'taken' : ''}" data-v="${s}"><span class="swatch" style="background:${s}"></span>${tk[s] ? ownerTag(tk[s]) : ''}</button>`).join('');
+  } else {
+    const src = { acc: ACCS, eyes: EYES, mouth: MOUTHS, hair: HAIRS }[tab];
+    const tk = tab === 'acc' ? takenBy('acc') : {};
+    box.innerHTML = Object.entries(src).map(([k, label]) => `<button class="opt ${me[tab] === k ? 'on' : ''} ${tk[k] ? 'taken' : ''}" data-v="${k}">${avatar({ ...me, [tab]: k })}${tk[k] ? ownerTag(tk[k]) : `<small>${label}</small>`}</button>`).join('');
+  }
+}
+function changed() { meMenu.refresh(); sfx.pick(); vib(10); drawPreview(true); drawOpts(); drawLobbyTable({ i: 0, cls: 'bump' }); everyoneLooksAt(0); drawStart(); }
+$('#tabs').onclick = e => { const b = e.target.closest('button'); if (!b) return; tab = b.dataset.t; $$('#tabs button').forEach(x => x.classList.toggle('on', x === b)); sfx.soft(); drawOpts(); };
+$('#opts').onclick = e => { const b = e.target.closest('.opt'); if (!b || b.classList.contains('taken')) return; me[tab] = b.dataset.v; changed(); };
+$('#hairCols').onclick = e => { const b = e.target.closest('[data-hc]'); if (!b) return; me.hairColor = b.dataset.hc; changed(); };
+$('#dice').onclick = () => { Object.assign(me, randomChar(Object.keys(takenBy('acc')), Object.keys(takenBy('skin')))); sfx.shuffle(); changed(); };
+$('#nameInp').oninput = () => { me.name = $('#nameInp').value.trim(); meMenu.refresh(); drawLobbyTable(); drawStart(); };
+
+/* ---------- LOBİ: ayarlar + başlat ---------- */
+function drawSettings() {
+  $('#settings').classList.toggle('ro', !isHost);
+  $('#setOwner').textContent = isHost ? '' : '· yönetici seçiyor';
+  $$('#settings .seg').forEach(sg => $$('button', sg).forEach(b => b.classList.toggle('on', b.dataset.v === settings[sg.dataset.k])));
+}
+$('#settings').onclick = e => { if (!isHost) return; const b = e.target.closest('.seg button'); if (!b) return; settings[b.parentElement.dataset.k] = b.dataset.v; sfx.soft(); drawSettings(); };
+function drawStart() {
+  const n = 1 + joined.length;
+  $('#startBox').innerHTML = isHost
+    ? `<button class="btn w full" id="btnStart" ${n < 3 || !me.name ? 'disabled' : ''}>Oyunu başlat <span class="arr">→</span></button><div class="count" style="text-align:center;margin-top:10px">${!me.name ? 'Önce adını yaz' : n < 3 ? 'En az 3 kişi gerekli' : n + ' kişi masada'}</div>`
+    : `<div class="waiting"><span class="dots"><i></i><i></i><i></i></span>Yöneticinin başlatması bekleniyor</div>`;
+  if (isHost) $('#btnStart').onclick = () => { sfx.start(); go('mod'); };
+}
+enter.lobi = () => {
+  joined = [];
+  const q = $('#qr'); q.innerHTML = '';
+  try { new QRCode(q, { text: 'https://hegecalapkulu.github.io/kim-daha/?oda=KEDI', width: 168, height: 168, colorDark: '#0F1B3D', colorLight: '#ffffff' }); } catch {}
+  $('#nameInp').value = me.name;
+  drawSettings(); drawPreview(); drawOpts(); drawLobbyTable({ i: 0, cls: 'in' }); drawStart();
+  FRIENDS.forEach((f0, i) => later(1500 + i * 1700, () => {
+    // aynı aksesuar ya da renk alınmışsa boşta olandan seçer
+    const f = { ...f0 }, usedAcc = [me.acc, ...joined.map(x => x.acc)], usedSkin = [me.skin, ...joined.map(x => x.skin)];
+    if (usedAcc.includes(f.acc)) f.acc = pick(Object.keys(ACCS).filter(a => a !== 'none' && !usedAcc.includes(a)));
+    if (usedSkin.includes(f.skin)) f.skin = pick(SKINS.filter(s => !usedSkin.includes(s)));
+    joined.push(f); drawLobbyTable({ i: joined.length, cls: 'in' }); everyoneLooksAt(joined.length); drawOpts(); drawStart(); sfx.join(); vib(15);
+  }));
+};
+$('#btnShare').onclick = async () => { try { await navigator.share({ title: 'Kim Daha?', url: 'https://hegecalapkulu.github.io/kim-daha/?oda=KEDI' }); } catch { toast('Paylaşım bu tarayıcıda yok'); } };
+$('#btnCopy').onclick = () => { navigator.clipboard?.writeText('https://hegecalapkulu.github.io/kim-daha/?oda=KEDI'); toast('Link kopyalandı'); };
+
+/* ---------- MOD ---------- */
+function drawMode() {
+  $('#modBox').classList.toggle('ro', !isHost);
+  $$('.mode').forEach(m => m.classList.toggle('on', m.dataset.mode === settings.mode));
+  $('#hazirSet').classList.toggle('hidden', settings.mode !== 'hazir');
+  $('[data-k="spicy"]').classList.toggle('on', settings.spicy);
+  $$('#hazirSet .seg button').forEach(b => b.classList.toggle('on', b.dataset.v === settings.rounds));
+  $$('#animSet .seg button').forEach(b => b.classList.toggle('on', b.dataset.v === settings.anim));
+  $('#packs').innerHTML = PAKETLER.map((p, i) => {
+    const n = paketSorulari(i, { baharat: settings.spicy }).length, pl = played.includes(i);
+    return `<button class="pack ${settings.pack === i ? 'on' : ''} ${pl ? 'played' : ''}" data-pack="${i}"><span class="e">${p.e}</span><b>${p.ad}</b><small>${n} soru</small>${pl ? '<span class="pl">Oynandı ✓</span>' : ''}</button>`;
+  }).join('');
+  $('#packReset').classList.toggle('hidden', !played.length);
+  $('#modSub').textContent = isHost ? 'Bir kez seçilir, oyun bitene kadar değişmez.' : 'Yönetici seçiyor. Oyun bitene kadar değişmez.';
+  $('#modGo').innerHTML = isHost ? `<button class="btn w full" id="btnModGo">${settings.mode === 'kendi' ? 'Başla, herkes ilk kartını yazsın' : 'Başla, desteyi karıştır'} <span class="arr">→</span></button>`
+    : `<div class="waiting"><span class="dots"><i></i><i></i><i></i></span>Yönetici modu seçiyor</div>`;
+  if (isHost) $('#btnModGo').onclick = () => {
+    if (settings.mode === 'hazir' && !played.includes(settings.pack)) { played.push(settings.pack); try { localStorage.setItem('kd_played', JSON.stringify(played)); } catch {} }
+    setFast(settings.anim === 'hizli'); meMenu.refresh(); sfx.start(); go(settings.mode === 'kendi' ? 'yaz' : 'karistir'); };
+}
+$('#modBox').onclick = e => {
+  if (!isHost) return;
+  const m = e.target.closest('.mode'), b = e.target.closest('.seg button'), sw = e.target.closest('.sw'), pk = e.target.closest('.pack');
+  if (e.target.closest('#packReset')) { played = []; try { localStorage.removeItem('kd_played'); } catch {} settings.pack = 0; sfx.soft(); drawMode(); return; }
+  if (pk) settings.pack = +pk.dataset.pack;
+  else if (m) settings.mode = m.dataset.mode; else if (b) settings[b.parentElement.dataset.k] = b.dataset.v; else if (sw) settings.spicy = !settings.spicy; else return;
+  sfx.pick(); drawMode();
+};
+enter.mod = drawMode;
+
+/* ---------- SORU YAZ (her tur başında) ---------- */
+let wseats = [], wcount = 0;
+function addMini() {
+  const m = document.createElement('div'); m.className = 'mini back';
+  const r = `rotate(${(Math.random() * 40 - 20).toFixed(1)}deg) translate(${(Math.random() * 16 - 8).toFixed(1)}px,${(Math.random() * 10 - 5).toFixed(1)}px)`;
+  m.style.setProperty('--r', r); m.style.transform = r; $('#wpile').appendChild(m);
+  wcount++; $('#wcount').textContent = wcount + ' / 6 kart';
+  if (wcount === 6) later(1200, () => go('karistir'));
+}
+enter.yaz = () => {
+  wcount = 0; $('#wpile').innerHTML = ''; $('#wcount').textContent = '0 / 6 kart';
+  $('#qtext').value = ''; $('#qcnt').textContent = '0 / 110'; $('#btnPut').disabled = true; $('#btnPut').classList.remove('hidden');
+  $('#sent').classList.remove('on'); const qe = $('#qedit'); qe.style.transform = ''; qe.style.opacity = '';
+  qe.classList.remove('hidden'); $('#ideas').classList.remove('hidden');
+  const t = $('#writeTable'); $$('.seat', t).forEach(s => s.remove());
+  const people = [me, ...FRIENDS]; wseats = people.map((_, i) => seatXY(i, people.length));
+  people.forEach((p, i) => {
+    const s = document.createElement('div'); s.className = 'seat' + (i === 0 ? ' me' : ''); s.dataset.i = i;
+    s.style.left = wseats[i].x + '%'; s.style.top = wseats[i].y + '%';
+    s.innerHTML = avatar(p, { cls: 'av' }) + `<div class="nm">${i === 0 ? 'Sen' : esc(p.name)}</div><div class="ok">✓</div>`; t.appendChild(s);
+  });
+  const wander = () => { for (let i = 1; i < people.length; i++) { if (Math.random() < .5) { const el = $(`#writeTable .seat[data-i="${i}"] .pupils`); if (el) el.style.transform = Math.random() < .5 ? 'translate(0,3px)' : ''; if (Math.random() < .3) lookAt('#writeTable', i, Math.floor(Math.random() * people.length), wseats); } } later(1400, wander); };
+  wander();
+  [3200, 5600, 7400, 9800, 12500].forEach((ms, k) => later(ms, () => { $(`#writeTable .seat[data-i="${k + 1}"]`).classList.add('done'); addMini(); sfx.land(); }));
+};
+$('#qtext').oninput = () => { const v = $('#qtext').value; $('#qcnt').textContent = v.length + ' / 110'; $('#btnPut').disabled = v.trim().length < 6; };
+$('#ideas').onclick = e => { const b = e.target.closest('button'); if (!b) return; $('#qtext').value = b.textContent.replace('…', ' '); $('#qtext').focus(); $('#qtext').oninput(); sfx.soft(); };
+$('#btnPut').onclick = () => {
+  if (fast) {
+    sfx.put(); addMini(); $('#writeTable .seat[data-i="0"]').classList.add('done');
+    $('#qedit').classList.add('hidden'); $('#ideas').classList.add('hidden'); $('#btnPut').classList.add('hidden'); $('#sent').classList.add('on');
+    return;
+  }
+  const qe = $('#qedit'), from = qe.getBoundingClientRect(), pile = $('#wpile').getBoundingClientRect();
+  const f = document.createElement('div'); f.className = 'flyer back';
+  Object.assign(f.style, { left: from.left + 'px', top: from.top + 'px', width: from.width + 'px', height: from.height + 'px' });
+  document.body.appendChild(f);
+  qe.style.transform = 'perspective(900px) rotateY(90deg)'; qe.style.opacity = '0';
+  sfx.put(); vib(20);
+  const dx = pile.left - (from.left + from.width / 2), dy = pile.top - (from.top + from.height / 2);
+  requestAnimationFrame(() => requestAnimationFrame(() => { f.style.transform = `translate(${dx}px,${dy}px) rotate(${Math.random() * 30 - 15}deg) scale(${40 / from.width},${56 / from.height})`; }));
+  later(870, () => { f.remove(); addMini(); $('#writeTable .seat[data-i="0"]').classList.add('done'); });
+  $('#btnPut').classList.add('hidden'); $('#sent').classList.add('on');
+  later(700, () => { qe.classList.add('hidden'); $('#ideas').classList.add('hidden'); });
+};
+
+/* ---------- DESTE: üstteki karta dokununca tur başlar ---------- */
+function drawAnonSet() {
+  $('#anonSet').classList.toggle('ro', !isHost);
+  settings.anim = fast ? 'hizli' : 'tam';
+  $$('#anonSet .seg button').forEach(b => b.classList.toggle('on', b.dataset.v === settings[b.parentElement.dataset.k]));
+}
+$('#anonSet').onclick = e => {
+  if (!isHost) return; const b = e.target.closest('.seg button'); if (!b) return;
+  const k = b.parentElement.dataset.k; settings[k] = b.dataset.v;
+  if (k === 'anim') { setFast(b.dataset.v === 'hizli'); meMenu.refresh(); }
+  sfx.soft(); drawAnonSet();
+};
+function openFirstCard(top, h) {
+  if (top.dataset.opened) return; top.dataset.opened = '1';
+  top.classList.remove('tapme'); top.classList.add('opening');
+  const cap = $('.tapcap'); if (cap) cap.style.display = 'none';
+  sfx.flip(); vib(30);
+  top.style.transform = `translate(0,${-h * .6}px) rotateY(180deg) scale(${fast ? 1.4 : 2.4})`;
+  later(fast ? 250 : 650, () => { location.href = `sahne.html?basla=1&anon=${settings.anon}`; });
+}
+enter.karistir = () => {
+  const n = 7, d = $('#deck'), tw = $('#deckTable').clientWidth, w = Math.max(48, Math.min(78, tw * .12)), h = w * 1.4;
+  d.innerHTML = ''; $('#ready').classList.add('hidden'); $('#shcap').classList.remove('hidden');
+  $('#shcap').textContent = settings.mode === 'kendi' ? 'Kartlarınız karıştırılıyor…' : 'Hazır deste karıştırılıyor…';
+  const cards = Array.from({ length: n }, (_, i) => {
+    const c = document.createElement('div'); c.className = 'dc back';
+    Object.assign(c.style, { width: w + 'px', height: h + 'px', margin: `${-h / 2}px 0 0 ${-w / 2}px`, transform: `translate(0,${-i * 1.5}px)` });
+    d.appendChild(c); return c;
+  });
+  let t = 300;
+  if (fast) { t = 0; } else later(t, () => sfx.shuffle());
+  for (let r = 0; r < (fast ? 0 : 3); r++) {
+    later(t, () => cards.forEach((c, i) => c.style.transform = `translate(${i % 2 ? w * .75 : -w * .75}px,${-i * 1.5}px) rotate(${i % 2 ? 8 : -8}deg)`));
+    t += 480;
+    later(t, () => { cards.forEach((c, i) => c.style.transform = `translate(0,${-i * 1.5}px) rotate(${(Math.random() * 6 - 3).toFixed(1)}deg)`); vib(25); });
+    t += 600;
+  }
+  later(t, () => { cards.forEach((c, i) => c.style.transform = `translate(${(i - (n - 1) / 2) * w * .32}px,${Math.abs(i - (n - 1) / 2) * 3}px) rotate(${(i - (n - 1) / 2) * 7}deg)`); sfx.fan(); });
+  t += fast ? 150 : 900;
+  later(t, () => {
+    const top = cards[n - 1];
+    top.style.transform = `translate(0,${-h * .35}px) scale(1.25)`; top.style.zIndex = 5; sfx.flipCard();
+    $('#shcap').classList.add('hidden'); $('#ready').classList.remove('hidden');
+    const P0 = PAKETLER[settings.pack], pn = paketSorulari(settings.pack, { baharat: settings.spicy }).length;
+    const base = settings.mode === 'kendi' ? '6 soru kartı masada.' : `${P0.e} ${P0.ad} paketi, ${settings.rounds === 'hepsi' ? pn : settings.rounds} soru${settings.spicy ? ', baharatlılar dahil 🌶️' : ''}.`;
+    $('#readySub').textContent = base + (isHost ? ' Öne çıkan karta dokun, tur başlasın.' : ' Yönetici öne çıkan karta dokununca tur başlayacak.');
+    drawAnonSet();
+    const cap = document.createElement('div'); cap.className = 'tapcap';
+    cap.textContent = isHost ? 'Dokun, tur başlasın' : 'Yönetici açacak';
+    cap.style.top = (h * .55) + 'px'; d.appendChild(cap);
+    if (isHost) { top.classList.add('tapme'); top.onclick = () => openFirstCard(top, h); }
+    else later(3500, () => openFirstCard(top, h));       // demo: yönetici açıyor
+  });
+};
+
+preload(SOUNDS);
+const meMenu = mountMeMenu($('#meMenu'), { getChar: () => me, getName: () => me.name, onEdit: () => { if (cur !== 'lobi') go('lobi'); setTimeout(() => { $('.a-me').scrollIntoView({ behavior: 'smooth', block: 'start' }); $('#nameInp').focus({ preventScroll: true }); }, 120); } });
+document.body.classList.toggle('fast', fast);
+go(location.hash === '#lobi' ? 'lobi' : 'acilis');
+</script>
+</body>
+</html>

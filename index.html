@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Kim Daha?</title>
+<meta name="description" content="Arkadaşlarınla gizli oylama parti oyunu. Soru kartı açılır, herkes gizlice birini seçer.">
+<meta name="theme-color" content="#0F1B3D">
+<meta property="og:title" content="Kim Daha?">
+<meta property="og:description" content="Soru kartı açılır, herkes gizlice birini seçer. Kartlar açılınca masada kıyamet kopar.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230F1B3D'/><text x='50' y='72' font-size='64' text-anchor='middle' fill='%23FF3D8B' font-family='Arial'>?</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/oyun.css">
+</head>
+<body>
+<div class="bg"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
+<div class="grain"></div>
+<div class="floaters" id="floaters"></div>
+<div class="wrap">
+  <header>
+    <div class="logo" id="logo">Kim Daha<b>?</b></div>
+    <div class="meta"><span class="netdot" id="net" title="Bağlantı"></span><span class="pill hidden" id="roomPill"></span><span id="anonPill"></span><div id="meMenu"></div></div>
+  </header>
+  <main id="app"></main>
+</div>
+<div class="toast" id="toast"></div>
+<script>window.SES_YOLU = 'ses/';</script>
+<script src="vendor/mqtt.min.js"></script>
+<script src="vendor/qrcode.min.js"></script>
+<script src="js/ortak.js"></script>
+<script src="js/sorular.js"></script>
+<script src="js/oyun.js"></script>
+</body>
+</html>

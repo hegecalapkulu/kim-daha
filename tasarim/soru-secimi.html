@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Kim Daha? — Soru Seçimi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0F1B3D;--navy2:#16244d;--white:#fff;--pink:#FF3D8B;--ink-2:rgba(255,255,255,.62);--ink-3:rgba(255,255,255,.38);--glass:rgba(255,255,255,.06);--glass-b:rgba(255,255,255,.12);--mono:'Geist Mono',ui-monospace,monospace}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--navy);color:#fff;font-family:'Geist',system-ui,sans-serif;padding-bottom:110px}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(60vmax 50vmax at -10% -10%,rgba(255,61,139,.22),transparent 60%),radial-gradient(50vmax 40vmax at 110% 30%,rgba(58,91,217,.25),transparent 60%)}
+button,textarea{font:inherit;color:inherit}
+button{border:0;background:none;cursor:pointer}
+.wrap{position:relative;max-width:820px;margin:0 auto;padding:0 16px}
+header{padding:28px 0 8px}
+.logo{font-weight:500;font-size:18px;letter-spacing:-.03em}.logo b{color:var(--pink)}
+h1{font-size:clamp(34px,7vw,56px);font-weight:400;letter-spacing:-.05em;line-height:1;margin:22px 0 10px}
+h1 em{font-style:normal;color:var(--pink)}
+.lead{color:var(--ink-2);line-height:1.5;margin:0 0 26px;max-width:560px}
+.rule{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;color:var(--ink-3);margin:30px 0 12px;text-transform:uppercase}
+.rule:after{content:"";flex:1;height:1px;background:var(--glass-b)}
+.box{border:1px solid var(--glass-b);background:var(--glass);border-radius:14px;padding:16px}
+.qq{margin-bottom:18px}.qq:last-child{margin:0}
+.qq b{display:block;font-weight:500;margin-bottom:10px;letter-spacing:-.01em}
+.choices{display:flex;flex-wrap:wrap;gap:8px}
+.choices button{border:1px solid var(--glass-b);border-radius:8px;padding:10px 14px;font-size:14px;color:var(--ink-2);text-align:left}
+.choices button small{display:block;font-size:12px;color:var(--ink-3);margin-top:2px}
+.choices button.on{border-color:var(--pink);background:rgba(255,61,139,.14);color:#fff}
+.cat{margin-top:14px;border:1px solid var(--glass-b);border-radius:14px;overflow:hidden;background:rgba(255,255,255,.03);transition:opacity .3s}
+.cat-h{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--glass-b)}
+.cat-h .e{font-size:26px}
+.cat-h .t{flex:1;min-width:0}
+.cat-h .t b{display:block;font-weight:500;font-size:17px;letter-spacing:-.02em}
+.cat-h .t small{color:var(--ink-3);font-size:12.5px}
+.cat-h .drop{font-family:var(--mono);font-size:11px;color:var(--ink-3);border:1px solid var(--glass-b);border-radius:6px;padding:7px 9px;white-space:nowrap}
+.cat.off{opacity:.4}
+.cat.off .drop{color:var(--pink);border-color:var(--pink);opacity:1}
+.cat.off .q{pointer-events:none}
+.q{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.06);transition:background .2s}
+.q:last-child{border:0}
+.q .code{font-family:var(--mono);font-size:11px;color:var(--ink-3);width:30px;flex:none}
+.q .txt{flex:1;font-size:15.5px;line-height:1.35;transition:color .2s}
+.q .x{flex:none;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--glass-b);display:flex;align-items:center;justify-content:center;font-size:13px;color:transparent;transition:.25s cubic-bezier(.3,1.6,.5,1)}
+.q:hover{background:rgba(255,255,255,.03)}
+.q.del{background:rgba(255,61,139,.07)}
+.q.del .txt{color:var(--ink-3);text-decoration:line-through;text-decoration-color:var(--pink)}
+.q.del .x{background:var(--pink);border-color:var(--pink);color:#fff;transform:rotate(90deg)}
+textarea{width:100%;min-height:90px;border-radius:10px;border:1px solid var(--glass-b);background:rgba(255,255,255,.05);padding:12px 14px;font-size:15px;outline:none;resize:vertical}
+textarea:focus{border-color:var(--pink)}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:rgba(15,27,61,.88);border-top:1px solid var(--glass-b);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.bar .in{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.bar .sum{flex:1;font-size:14px;color:var(--ink-2);line-height:1.3}
+.bar .sum b{color:#fff;font-weight:500}
+.copy{height:50px;padding:0 20px;border-radius:6px;background:#fff;color:var(--navy);font-weight:500;white-space:nowrap}
+.copy.ok{background:var(--pink);color:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><div class="logo">Kim Daha<b>?</b></div></header>
+  <h1>Beğenmediğin soruya <em>dokun</em>, elensin.</h1>
+  <p class="lead">Dokunduğun soru üstü çizilir. Bir kategoriyi komple istemiyorsan “kategoriyi çıkar” de. Bitince alttaki butonla seçimlerini kopyala ve bana yapıştır. Bu tam deste: elemek istediğin bir şey kalmadıysa hiçbir şeye dokunmadan da gönderebilirsin.</p>
+
+  <div class="rule">Tam deste · 19 kategori × 22 soru = 418</div>
+  <div id="cats"></div>
+
+  <div class="rule">Eklemek istediğin bir şey</div>
+  <textarea id="note" placeholder="Yeni kategori fikri, eklemek istediğin soru, ton hakkında not…"></textarea>
+</div>
+
+<div class="bar"><div class="in"><div class="sum" id="sum"></div><button class="copy" id="copy">Seçimleri kopyala</button></div></div>
+
+<script src="ortak.js"></script>
+<script src="sorular.js"></script>
+<script>
+const CODES = { komik: 'KO', acimasiz: 'AC', ask: 'AŞ', utanc: 'UT', pislik: 'Pİ', karaktersiz: 'KR', hainlik: 'HA', kurnazlik: 'KU', sinsilik: 'Sİ', drama: 'DR', dedikodu: 'DE', tembellik: 'TE', cimrilik: 'Cİ', ego: 'EG', kaos: 'KA', gelecek: 'GE', kampus: 'KM', saflik: 'SA', baharatli: 'BA' };
+const CATS = Object.keys(SORULAR).map(k => [CODES[k], CATEGORIES[k].e, CATEGORIES[k].ad, CATEGORIES[k].tepki + (k === 'baharatli' ? ' · ayarlardan kapatılabilir' : ''), SORULAR[k]]);
+
+const KEY = 'kd_soru_secimi_v3';
+let st = { del: [], off: [], pislik: null, baharat: null, note: '' };
+try { st = { ...st, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch {} };
+
+function draw() {
+  document.getElementById('cats').innerHTML = CATS.map(([c, e, name, react, qs]) => `
+    <div class="cat ${st.off.includes(c) ? 'off' : ''}" data-c="${c}">
+      <div class="cat-h"><span class="e">${e}</span><div class="t"><b>${name}</b><small>%60 tepkisi: ${react}</small></div>
+        <button class="drop">${st.off.includes(c) ? 'çıkarıldı · geri al' : 'kategoriyi çıkar'}</button></div>
+      ${qs.map((q, i) => { const k = c + (i + 1); return `<button class="q ${st.del.includes(k) ? 'del' : ''}" data-k="${k}"><span class="code">${k}</span><span class="txt">${q}</span><span class="x">✕</span></button>`; }).join('')}
+    </div>`).join('');
+  document.querySelectorAll('.choices').forEach(ch => ch.querySelectorAll('button').forEach(b => b.classList.toggle('on', st[ch.dataset.q] === b.dataset.v)));
+  document.getElementById('note').value = st.note;
+  sum();
+}
+function sum() {
+  const parts = [`<b>${st.del.length}</b> soru elendi`];
+  if (st.off.length) parts.push(`<b>${st.off.length}</b> kategori çıktı`);
+  let left = 0;
+  CATS.forEach(([c, , , , qs]) => { if (!st.off.includes(c)) qs.forEach((_, i) => { if (!st.del.includes(c + (i + 1))) left++; }); });
+  document.getElementById('sum').innerHTML = parts.join(' · ') + `<br><span style="color:var(--ink-3)">${left} soru kaldı</span>`;
+}
+document.getElementById('cats').onclick = e => {
+  const q = e.target.closest('.q'), d = e.target.closest('.drop');
+  if (q) { const k = q.dataset.k; st.del = st.del.includes(k) ? st.del.filter(x => x !== k) : [...st.del, k]; q.classList.toggle('del'); }
+  else if (d) { const c = d.closest('.cat').dataset.c; st.off = st.off.includes(c) ? st.off.filter(x => x !== c) : [...st.off, c]; draw(); }
+  else return;
+  try { navigator.vibrate && navigator.vibrate(8); } catch {}
+  save(); sum();
+};
+document.querySelectorAll('.choices').forEach(ch => ch.onclick = e => { const b = e.target.closest('button'); if (!b) return; st[ch.dataset.q] = b.dataset.v; save(); draw(); });
+document.getElementById('note').oninput = e => { st.note = e.target.value; save(); };
+
+document.getElementById('copy').onclick = async () => {
+  const lab = { pis: 'pis alışkanlıklar', karakter: 'karaktersiz/pislik insan', ikisi: 'ikisi de (iki kategori)', orta: 'orta', ates: 'daha ateşli', cok: 'çok ateşli' };
+  const lines = ['Kim Daha? tam deste elemem:',
+    'Elenen sorular: ' + (st.del.length ? st.del.filter(k => !st.off.includes(k.slice(0, -1))).sort().join(', ') : 'yok'),
+    'Çıkan kategoriler: ' + (st.off.length ? st.off.map(c => CATS.find(x => x[0] === c)[2]).join(', ') : 'yok'),
+    ];
+  if (st.note.trim()) lines.push('Not: ' + st.note.trim());
+  const txt = lines.join('\n');
+  try { await navigator.clipboard.writeText(txt); } catch { prompt('Kopyala:', txt); }
+  const b = document.getElementById('copy'); b.textContent = 'Kopyalandı ✓ Claude\'a yapıştır'; b.classList.add('ok');
+  setTimeout(() => { b.textContent = 'Seçimleri kopyala'; b.classList.remove('ok'); }, 2600);
+};
+draw();
+</script>
+</body>
+</html>
