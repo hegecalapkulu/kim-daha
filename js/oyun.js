@@ -42,7 +42,11 @@ if (!ME.c) ME.c = randomChar();
 ME.c = cleanChar(ME.c);
 const saveMe = () => saveJ('kd2_me', ME);
 saveMe();
-let played = loadJ('kd2_played') || [];
+// Oynanan paketler (yöneticinin cihazında). Paket ancak en az 3 sorusunun sonucu açılınca "oynandı" sayılır.
+// Eski anahtar ("Başla"ya basınca işaretleyen sürüm) bilerek okunmuyor: deneme amaçlı işaretler silinmiş olur.
+const PLAYED_KEY = 'kd2_oynanan';
+let played = loadJ(PLAYED_KEY) || [];
+const savePlayed = () => saveJ(PLAYED_KEY, played);
 const firstUnplayed = () => { const i = PAKETLER.findIndex((_, k) => !played.includes(k)); return i < 0 ? 0 : i; };
 
 /* ---------- bağlantı ---------- */
@@ -229,7 +233,6 @@ function hostModeGo() {
     let deck = shuffleArr(paketSorulari(S.set.pack, { baharat: S.set.spicy }).map(x => ({ t: x.soru, cat: x.kat })));
     if (S.set.rounds !== 'hepsi') deck = deck.slice(0, +S.set.rounds);
     H.deck = deck; S.total = deck.length;
-    if (!played.includes(S.set.pack)) { played.push(S.set.pack); saveJ('kd2_played', played); }
     goDeck();
   } else { S.total = 0; goWrite(); }
 }
@@ -269,6 +272,8 @@ function reveal() {
   const pass = S.order.filter(id => S.players[id] && !H.votes[id]);
   win.forEach(id => (S.titles[id] = S.titles[id] || []).push(S.q.t));
   S.rv = { counts, seq, win, total: pairs.length, pct: pairs.length ? Math.round(max / pairs.length * 100) : 0, uni, pass, anon: S.set.anon, pairs: S.set.anon ? null : pairs };
+  // paket gerçekten oynandıysa (en az 3 soru ya da paketin tamamı) işaretle
+  if (S.set.mode === 'hazir' && S.r >= Math.min(3, S.total) && !played.includes(S.set.pack)) { played.push(S.set.pack); savePlayed(); }
   S.phase = 'reveal'; S.dl = null; changed();
 }
 function hostNext() { if (S.phase !== 'reveal') return; if (H.deck.length) { S.phase = 'prep'; S.prep = 'card'; S.q = null; S.rv = null; changed(); } else hostAfterDeck(); }
@@ -532,7 +537,8 @@ build.mode = () => {
       </div>
       <div class="glass set" id="hazirSet" style="margin-top:14px">
         <div class="packwrap"><div class="ph">Soru paketi<small>Hiçbir soru iki pakette yok. Oynadığınız paketler işaretlenir.</small></div><div class="packs" id="packs"></div>
-          <button class="packreset hidden" id="packReset">Paket geçmişini sıfırla</button></div>
+          <button class="packreset hidden" id="packUnplay">Bu paketi oynanmadı say</button>
+          <button class="packreset hidden" id="packReset" style="margin-left:14px">Paket geçmişini sıfırla</button></div>
         <div class="row"><div class="l">Baharatlı sorular 🌶️<small>+18 imalı sorular desteye karışır</small></div><button class="sw" data-k="spicy" aria-label="Baharatlı"></button></div>
         <div class="row"><div class="l">Kaç soru?</div><div class="seg" data-k="rounds"><button data-v="10">10</button><button data-v="20">20</button><button data-v="30">30</button><button data-v="hepsi">Hepsi</button></div></div>
       </div>
@@ -544,7 +550,8 @@ build.mode = () => {
   $('#modBox').onclick = e => {
     if (!isHost()) return;
     const m = e.target.closest('.mode'), b = e.target.closest('.seg button'), sw = e.target.closest('.sw'), pk = e.target.closest('.pack');
-    if (e.target.closest('#packReset')) { played = []; dropK('kd2_played'); sfx.soft(); return hostSet('pack', 0); }
+    if (e.target.closest('#packReset')) { played = []; savePlayed(); sfx.soft(); return hostSet('pack', 0); }
+    if (e.target.closest('#packUnplay')) { played = played.filter(i => i !== S.set.pack); savePlayed(); sfx.soft(); return hostSet('pack', S.set.pack); }
     sfx.pick();
     if (pk) hostSet('pack', +pk.dataset.pack);
     else if (m) hostSet('mode', m.dataset.mode);
@@ -564,6 +571,7 @@ update.mode = () => {
     return `<button class="pack ${s.pack === i ? 'on' : ''} ${pl ? 'played' : ''}" data-pack="${i}"><span class="e">${p.e}</span><b>${p.ad}</b><small>${n} soru</small>${pl ? '<span class="pl">Oynandı ✓</span>' : ''}</button>`;
   }).join('');
   $('#packReset').classList.toggle('hidden', !isHost() || !played.length);
+  $('#packUnplay').classList.toggle('hidden', !isHost() || !played.includes(s.pack));
   $('#modSub').textContent = isHost() ? 'Bir kez seçilir, oyun bitene kadar değişmez.' : 'Yönetici seçiyor, seçimler burada canlı görünür.';
   $('#modGo').innerHTML = isHost()
     ? `<button class="btn w full" id="btnModGo">${s.mode === 'kendi' ? 'Başla, herkes ilk kartını yazsın' : 'Başla, desteyi karıştır'} <span class="arr">→</span></button>`
