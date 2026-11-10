@@ -12,7 +12,18 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/oyun.css">
+<script>
+/* Sürüm kontrolü: GitHub Pages dosyaları 10 dk önbellekte tutar. Yeni sürüm yayındaysa
+   sayfa kendini yeni sürümün adresiyle (önbelleği aşarak) yeniden açar. */
+window.SURUM = '20261110230139';
+fetch('surum.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json()).then(d => {
+  if (!d || !d.v || d.v === window.SURUM) return;
+  const u = new URL(location.href);
+  if (u.searchParams.get('v') === d.v) return;            // zaten denendi, döngüye girme
+  u.searchParams.set('v', d.v); location.replace(u.toString());
+}).catch(() => {});
+</script>
+<link rel="stylesheet" href="css/oyun.css?v=20261110230139">
 </head>
 <body>
 <div class="bg"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
@@ -27,10 +38,10 @@
 </div>
 <div class="toast" id="toast"></div>
 <script>window.SES_YOLU = 'ses/';</script>
-<script src="vendor/mqtt.min.js"></script>
-<script src="vendor/qrcode.min.js"></script>
-<script src="js/ortak.js"></script>
-<script src="js/sorular.js"></script>
-<script src="js/oyun.js"></script>
+<script src="vendor/mqtt.min.js?v=20261110230139"></script>
+<script src="vendor/qrcode.min.js?v=20261110230139"></script>
+<script src="js/ortak.js?v=20261110230139"></script>
+<script src="js/sorular.js?v=20261110230139"></script>
+<script src="js/oyun.js?v=20261110230139"></script>
 </body>
 </html>
