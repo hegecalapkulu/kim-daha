@@ -185,6 +185,8 @@ function addPlayer(pid, name, c) {
   if (isNew) S.order.push(pid);
   S.players[pid] = { n: uniqueName(pid, name), c, on: true };
   S.titles[pid] = S.titles[pid] || [];
+  S.x2left = S.x2left || {};
+  if (S.x2left[pid] == null) S.x2left[pid] = S.phase === 'lobby' ? 0 : x2Quota();   // oyun sırasında gelen de hakkını alır
   H.seen[pid] = Date.now();
 }
 function hostInput(m) {
@@ -212,8 +214,15 @@ function hostInput(m) {
       changed(); maybeDoneWriting(); break;
     }
     case 'vote': {
-      if (S.phase !== 'vote' || m.r !== S.r || !S.players[m.to] || m.to === pid) return;
-      H.votes[pid] = m.to; if (!S.voted.includes(pid)) S.voted.push(pid);
+      // tek oy hakkı: pas, kendine oy serbest; 2x sadece hazır destede ve hak varsa
+      if (S.phase !== 'vote' || m.r !== S.r || S.voted.includes(pid)) return;
+      if (!m.pass) {
+        if (!S.players[m.to]) return;
+        H.votes[pid] = m.to;
+        S.x2left = S.x2left || {}; H.x2 = H.x2 || {};
+        if (m.x2 && S.set.mode === 'hazir' && (S.x2left[pid] || 0) > 0) { H.x2[pid] = true; S.x2left[pid]--; }
+      }
+      S.voted.push(pid);
       changed(); maybeReveal(); break;
     }
   }
@@ -228,14 +237,17 @@ function removePlayer(pid) {
 function hostSet(k, v) { S.set[k] = v; if (k === 'anim') setFast(v === 'hizli'); changed(); }
 function hostToMode() { if (S.order.length < 2) return toast('En az 2 kişi lazım'); S.phase = 'mode'; changed(); }
 function hostModeGo() {
-  S.r = 0; S.titles = {}; S.order.forEach(id => S.titles[id] = []);
+  S.r = 0; S.titles = {}; S.stats = {}; S.order.forEach(id => S.titles[id] = []);
   if (S.set.mode === 'hazir') {
     let deck = shuffleArr(paketSorulari(S.set.pack, { baharat: S.set.spicy }).map(x => ({ t: x.soru, cat: x.kat })));
     if (S.set.rounds !== 'hepsi') deck = deck.slice(0, +S.set.rounds);
     H.deck = deck; S.total = deck.length;
-    goDeck();
-  } else { S.total = 0; goWrite(); }
+    resetX2(); goDeck();
+  } else { S.total = 0; resetX2(); goWrite(); }
 }
+// 2x jokeri: hazır destede tur sayısının 5'te biri kadar (20 tur → 4), kendi kartlarımızda yok
+const x2Quota = () => S.set.mode === 'hazir' ? Math.floor(S.total / 5) : 0;
+function resetX2() { S.x2left = {}; S.order.forEach(id => S.x2left[id] = x2Quota()); }
 function goWrite() { S.phase = 'write'; S.wr++; S.written = []; H.cards = {}; S.q = null; S.rv = null; changed(); }
 function maybeDoneWriting() {
   if (!S || S.phase !== 'write') return;
@@ -252,7 +264,7 @@ function hostStartRound() {
   if (S.phase !== 'prep') return;
   const q = H.deck.shift(); if (!q) return hostAfterDeck();
   S.r++; S.q = q; S.deckLeft = H.deck.length; S.dl = Date.now() + S.set.time * 1000;
-  S.voted = []; H.votes = {}; S.rv = null; S.phase = 'vote'; changed();
+  S.voted = []; H.votes = {}; H.x2 = {}; S.rv = null; S.phase = 'vote'; changed();
 }
 function maybeReveal() {
   if (!S || S.phase !== 'vote') return;
@@ -261,17 +273,25 @@ function maybeReveal() {
 }
 function reveal() {
   if (S.phase !== 'vote') return;
-  const pairs = Object.entries(H.votes).filter(([f, t]) => S.players[t]);
-  const counts = {}; pairs.forEach(([, t]) => counts[t] = (counts[t] || 0) + 1);
+  // pairs: [kimden, kime, ağırlık] — 2x kullanan 2 sayılır
+  const pairs = Object.entries(H.votes).filter(([f, t]) => S.players[t]).map(([f, t]) => [f, t, H.x2 && H.x2[f] ? 2 : 1]);
+  const counts = {}; pairs.forEach(([, t, w]) => counts[t] = (counts[t] || 0) + w);
+  const total = pairs.reduce((a, p) => a + p[2], 0);
   const max = Math.max(0, ...Object.values(counts));
   const win = max ? Object.keys(counts).filter(id => counts[id] === max) : [];
-  const seq = shuffleArr(pairs.map(([, t]) => t));
-  if (win.length) { const li = seq.indexOf(win[0]); seq.push(seq.splice(li, 1)[0]); }   // son kart kazananın
+  const order = shuffleArr(pairs.map(p => [p[1], p[2]]));
+  if (win.length) { const li = order.findIndex(o => o[0] === win[0]); order.push(order.splice(li, 1)[0]); }   // son kart kazananın
+  const seq = order.map(o => o[0]), sw = order.map(o => o[1]);
   const target = win[0], others = pairs.filter(([f]) => f !== target);
   const uni = win.length === 1 && others.length >= 2 && others.every(([, t]) => t === target);
   const pass = S.order.filter(id => S.players[id] && !H.votes[id]);
   win.forEach(id => (S.titles[id] = S.titles[id] || []).push(S.q.t));
-  S.rv = { counts, seq, win, total: pairs.length, pct: pairs.length ? Math.round(max / pairs.length * 100) : 0, uni, pass, anon: S.set.anon, pairs: S.set.anon ? null : pairs };
+  // kategori kimliği için: bu kategorideki oyların kime gittiği
+  if (S.q.cat && total) {
+    S.stats = S.stats || {}; const st = S.stats[S.q.cat] = S.stats[S.q.cat] || { total: 0, by: {} };
+    st.total += total; Object.entries(counts).forEach(([id, n]) => st.by[id] = (st.by[id] || 0) + n);
+  }
+  S.rv = { counts, seq, sw, win, total, votes: pairs.length, pct: total ? Math.round(max / total * 100) : 0, uni, pass, anon: S.set.anon, pairs: S.set.anon ? null : pairs };
   // paket gerçekten oynandıysa (en az 3 soru ya da paketin tamamı) işaretle
   if (S.set.mode === 'hazir' && S.r >= Math.min(3, S.total) && !played.includes(S.set.pack)) { played.push(S.set.pack); savePlayed(); }
   S.phase = 'reveal'; S.dl = null; changed();
@@ -770,17 +790,25 @@ function stageHtml(side) {
   </main></section>`;
 }
 build.vote = () => {
-  if (my.r !== S.r) my = { r: S.r, sel: null, done: S.voted.includes(ME.id) };
+  if (my.r !== S.r) my = { r: S.r, sel: null, x2: false, done: S.voted.includes(ME.id) };
   app.innerHTML = stageHtml(`<div class="rule">Elin</div>
-    <div class="hand-head"><h3>Kimi seçiyorsun?</h3><small>Kendine oy yok</small></div>
+    <div class="hand-head"><h3>Kimi seçiyorsun?</h3><small>Kendine de verebilirsin</small></div>
     <div class="cards" id="cards"></div>
+    <div class="vopts" id="vopts"><button class="x2btn hidden" id="x2Btn"></button><button class="passbtn" id="passBtn">Pas geç</button></div>
     <button class="confirm" id="confirm" disabled>Kartı masaya koy <span class="arr">→</span></button>
     <div class="status" id="status"></div><div id="hostVoteCtl"></div>`);
   sfx.flip(); vib(30);
-  const others = seatOrder().filter(id => id !== ME.id);
-  $('#cards').innerHTML = others.map((id, i) => `<button class="card" data-id="${id}" style="animation-delay:${fast ? 0 : .35 + i * .07}s" aria-label="${esc(P(id).n)}">
-    <span class="tick">${CHECK}</span><span class="thumb">${avatar(charOf(id))}</span><span class="nm">${esc(P(id).n)}</span></button>`).join('');
-  others.forEach((_, i) => sfx.deal(i));
+  const hand = [...seatOrder().filter(id => id !== ME.id), ME.id];          // kendi kartın en sonda
+  $('#cards').innerHTML = hand.map((id, i) => `<button class="card ${id === ME.id ? 'mine' : ''}" data-id="${id}" style="animation-delay:${fast ? 0 : .35 + i * .07}s" aria-label="${id === ME.id ? 'Kendine' : esc(P(id).n)}">
+    <span class="tick">${CHECK}</span><span class="thumb">${avatar(charOf(id))}</span><span class="nm">${id === ME.id ? 'Sen' : esc(P(id).n)}</span></button>`).join('');
+  hand.forEach((_, i) => sfx.deal(i));
+  drawX2();
+  $('#x2Btn').onclick = () => { if (my.done || x2Left() <= 0) return; my.x2 = !my.x2; sfx.pick(); vib(15); drawX2(); };
+  $('#passBtn').onclick = () => {
+    if (my.done) return; my.done = true; my.sel = null; lookAt($('#table'), ME.id, null);
+    sfx.pass(); lockHand('Bu turu pas geçtin 🙈'); $('#cards').style.opacity = .35;
+    send({ t: 'vote', r: S.r, pass: true });
+  };
   $('#cards').onclick = e => {
     const c = e.target.closest('.card'); if (!c || my.done) return;
     my.sel = my.sel === c.dataset.id ? null : c.dataset.id;
@@ -794,16 +822,27 @@ build.vote = () => {
   wanderEyes($('#table'));
   tickTimer();
 };
+const x2Left = () => (S.set.mode === 'hazir' && S.x2left && S.x2left[ME.id]) || 0;
+function drawX2() {
+  const b = $('#x2Btn'); if (!b) return;
+  const left = x2Left();
+  b.classList.toggle('hidden', S.set.mode !== 'hazir' || (left <= 0 && !my.x2));
+  b.classList.toggle('on', my.x2);
+  b.innerHTML = `<b>2x</b><span>${my.x2 ? 'Oyun 2 sayılacak' : 'Oyunu ikiye katla'}</span><small>${left} hak</small>`;
+  $$('#cards .card').forEach(c => c.classList.toggle('x2', my.x2));
+  $('#confirm').innerHTML = my.x2 ? 'Kartı 2x masaya koy <span class="arr">→</span>' : 'Kartı masaya koy <span class="arr">→</span>';
+}
 function lockHand(msg) {
-  my.done = true; $('#cards').classList.add('locked'); $('#confirm').style.display = 'none';
+  my.done = true; $('#cards').classList.add('locked'); $('#confirm').style.display = 'none'; $('#vopts').classList.add('hidden');
   const st = $('#status'); st.classList.add('on'); st.innerHTML = msg;
 }
 function confirmVote() {
   if (!my.sel || my.done) return;
-  const to = my.sel; my.done = true;
-  const done = () => send({ t: 'vote', r: S.r, to });
+  const to = my.sel, x2 = my.x2 && x2Left() > 0; my.done = true;
+  const done = () => send({ t: 'vote', r: S.r, to, x2 });
   const card = $(`#cards .card[data-id="${to}"]`);
-  sfx.put(); lockHand('Kartın masada <span style="color:var(--pink)">✓</span> Diğerleri bekleniyor…');
+  if (x2) { sfx.count(); vib([20, 30, 20]); }
+  sfx.put(); lockHand(`Kartın masada${x2 ? ' (2x)' : ''} <span style="color:var(--pink)">✓</span> Diğerleri bekleniyor…`);
   if (fast || !card) return done();
   const from = card.getBoundingClientRect(), pile = $('#table .pile').getBoundingClientRect();
   const f = document.createElement('div'); f.className = 'flyer';
@@ -834,6 +873,7 @@ update.vote = () => {
   syncPile(el, S.voted.length, S.voted.length ? S.voted.length + ' kart masada' : 'masa boş');
   $('#votedCount').textContent = `${S.voted.length} / ${onlineIds().length} oy`;
   if (S.voted.includes(ME.id) && !my.done) lockHand('Kartın masada <span style="color:var(--pink)">✓</span> Diğerleri bekleniyor…');
+  if (!my.done) drawX2();
   $('#hostVoteCtl').innerHTML = isHost() ? '<button class="btn g full sm" id="btnForce" style="margin-top:12px">Beklemeden sonucu göster</button>' : '';
   if ($('#btnForce')) $('#btnForce').onclick = () => { if (!S.voted.length && !confirm('Henüz kimse oy vermedi. Yine de geçilsin mi?')) return; reveal(); };
 };
@@ -846,28 +886,29 @@ build.reveal = () => {
     <div id="nextCtl" style="margin-top:16px"></div>`);
   const R = S.rv;
   drawTable($('#table'), { ids: seatOrder(), done: seatOrder().filter(id => !R.pass.includes(id)) });
-  $('#votedCount').textContent = `${R.total} oy · ${R.pass.length} pas`;
+  $('#votedCount').textContent = `${R.total} oy${R.votes != null && R.total !== R.votes ? ' (2x dahil)' : ''} · ${R.pass.length} pas`;
   $('#tally').innerHTML = seatOrder().map(id => `<div class="trow" data-id="${id}"><span class="tav">${avatar(charOf(id))}</span>
     <div class="mid"><div class="tnm">${nameOf(id)}</div><div class="stack"></div></div><span class="tc">0</span><div class="voters"></div></div>`).join('');
   runReveal(R);
 };
 update.reveal = () => {};
-function bumpCount(to) {
+function bumpCount(to, w = 1) {
   const row = $(`.trow[data-id="${to}"]`); if (!row) return;
-  row.querySelector('.stack').insertAdjacentHTML('beforeend', '<i></i>');
-  const tc = row.querySelector('.tc'); tc.textContent = +tc.textContent + 1; tc.classList.add('has');
+  row.querySelector('.stack').insertAdjacentHTML('beforeend', w > 1 ? '<i class="x2"></i><i class="x2"></i>' : '<i></i>');
+  const tc = row.querySelector('.tc'); tc.textContent = +tc.textContent + w; tc.classList.add('has');
   tc.classList.remove('bump'); void tc.offsetWidth; tc.classList.add('bump'); sfx.count();
 }
 function runReveal(R) {
   const tb = $('#table');
   if (!R.total) { $('#verdict').innerHTML = 'Kimse oy vermedi 😴'; return showNext(400); }
-  if (fast) { R.seq.forEach((to, i) => later(120 + i * 90, () => bumpCount(to))); return later(120 + R.seq.length * 90 + 250, () => finish(R)); }
+  const W = i => (R.sw && R.sw[i]) || 1;
+  if (fast) { R.seq.forEach((to, i) => later(120 + i * 90, () => bumpCount(to, W(i)))); return later(120 + R.seq.length * 90 + 250, () => finish(R)); }
   const tw = tb.clientWidth, w = Math.max(40, Math.min(70, tw * .115)), h = w * 1.38, gap = Math.min(w * .8, (tw * .5) / R.seq.length);
   const pile = tb.querySelector('.pile');
   const els = R.seq.map((to, i) => {
     const el = document.createElement('div'); el.className = 'vcard';
     el.style.cssText = `width:${w}px;height:${h}px;margin:${-h / 2}px 0 0 ${-w / 2}px;--w:${w}px;transform:scale(.2);opacity:0`;
-    el.innerHTML = `<div class="face back"></div><div class="face front">${avatar(charOf(to))}<b>${to === ME.id ? 'Sen' : esc(P(to).n)}</b></div>`;
+    el.innerHTML = `<div class="face back"></div><div class="face front">${W(i) > 1 ? '<span class="x2tag">2x</span>' : ''}${avatar(charOf(to))}<b>${to === ME.id ? 'Sen' : esc(P(to).n)}</b></div>`;
     pile.appendChild(el);
     const x = (i - (R.seq.length - 1) / 2) * gap, r = (i - (R.seq.length - 1) / 2) * 5;
     later(150 + i * 110, () => { el.style.opacity = 1; el.style.transform = `translate(${x}px,${Math.abs(r) * .8}px) rotate(${r}deg)`; sfx.deal(0); });
@@ -884,12 +925,12 @@ function runReveal(R) {
       Object.keys(tb._pos || {}).forEach(id => id !== to && lookAt(tb, id, to));   // herkes ona bakar
     });
     t += last ? 1500 : 1150;
-    later(t, () => flyToTally(el, to));
+    later(t, () => flyToTally(el, to, W(i)));
     t += last ? 500 : 650;
   });
   later(t + 300, () => finish(R));
 }
-function flyToTally(el, to) {
+function flyToTally(el, to, w = 1) {
   const row = $(`.trow[data-id="${to}"]`); if (!row) { el.remove(); return; }
   const stack = row.querySelector('.stack'), a = el.querySelector('.front').getBoundingClientRect(), b = stack.getBoundingClientRect();
   const f = document.createElement('div'); f.className = 'flyer2';
@@ -897,7 +938,7 @@ function flyToTally(el, to) {
   f.innerHTML = el.querySelector('.front').innerHTML; document.body.appendChild(f); el.remove();
   const tx = b.left + stack.children.length * 11 - a.left, ty = b.top - a.top;
   requestAnimationFrame(() => requestAnimationFrame(() => { f.style.transform = `translate(${tx}px,${ty}px) scale(${15 / a.width})`; f.style.opacity = .4; }));
-  setTimeout(() => { f.remove(); bumpCount(to); }, 620);
+  setTimeout(() => { f.remove(); bumpCount(to, w); }, 620);
 }
 function finish(R) {
   const tb = $('#table'), cat = S.q.cat || 'genel';
@@ -915,8 +956,8 @@ function finish(R) {
   else if (R.win.length === 1 && R.pct >= 60 && R.total >= 2) { later(t, () => reaction(R.win[0], R.pct, cat)); t += fast ? 1700 : 3300; }
   if (!R.anon && R.pairs) {
     later(t, () => $('#verdict').insertAdjacentHTML('beforeend', '<span class="lbl">Kim kime verdi ↓</span>')); t += 400;
-    rows.forEach(r => R.pairs.filter(p => p[1] === r.dataset.id).forEach(([from]) => {
-      later(t, () => { const v = r.querySelector('.voters'); v.insertAdjacentHTML('beforeend', `<span>${avatar(charOf(from))}${from === ME.id ? 'Sen' : esc(P(from).n)}</span>`); sfx.drop(v.children.length); });
+    rows.forEach(r => R.pairs.filter(p => p[1] === r.dataset.id).forEach(([from, , w]) => {
+      later(t, () => { const v = r.querySelector('.voters'); v.insertAdjacentHTML('beforeend', `<span>${avatar(charOf(from))}${from === ME.id ? 'Sen' : esc(P(from).n)}${w > 1 ? ' <b class="x2mini">2x</b>' : ''}</span>`); sfx.drop(v.children.length); });
       t += fast ? 110 : 380;
     }));
   }
@@ -982,19 +1023,45 @@ function showNext(after) {
 }
 
 /* ---------- SON ---------- */
+// kategori kimliği: her oyuncunun en yüksek oranla seçildiği kategori
+function categoryIdentity() {
+  const st = S.stats || {}, lead = [], ident = {};
+  Object.entries(st).forEach(([cat, x]) => {
+    if (!x.total || !CATEGORIES[cat]) return;
+    const max = Math.max(0, ...Object.values(x.by));
+    const ids = Object.keys(x.by).filter(id => x.by[id] === max && S.players[id]);   // beraberlikte hepsi
+    if (max && ids.length) lead.push({ cat, ids, n: max, rate: Math.round(max / x.total * 100) });
+    Object.entries(x.by).forEach(([id, n]) => {
+      const rate = n / x.total, cur = ident[id];
+      if (!cur || rate > cur.rate || (rate === cur.rate && n > cur.n)) ident[id] = { cat, rate, n };
+    });
+  });
+  lead.sort((a, b) => b.rate - a.rate || b.n - a.n);
+  return { lead, ident };
+}
 build.end = () => {
   const ids = seatOrder();
   const by = [...ids].sort((a, b) => (S.titles[b] || []).length - (S.titles[a] || []).length);
   const top = by[0], topN = top ? (S.titles[top] || []).length : 0;
+  const { lead, ident } = categoryIdentity();
+  const identHtml = id => {
+    const x = ident[id]; if (!x || !S.players[id]) return '';
+    const C = CATEGORIES[x.cat];
+    return `<div class="ident"><span class="ie">${C.e}</span><div><b>${C.tepki}</b><small>${C.ad} sorularındaki oyların %${Math.round(x.rate * 100)}'i</small></div></div>`;
+  };
   app.innerHTML = `<section class="screen"><div class="modewrap">
     <div class="endhero">${topN ? avatar(charOf(top)) : ''}<h2>${topN ? `<em>${nameOf(top)}</em>, gecenin yıldızı` : 'Oyun bitti'}</h2>
       <p class="sub">${topN ? topN + ' ünvanla masanın en çok seçileni' : 'Hiç ünvan çıkmadı'}</p></div>
-    <div class="rule">Ünvanlar</div>
+    <div class="rule">Kim neymiş?</div>
     <div class="glass awards" style="padding:4px 16px">${by.map(id => {
       const t = S.titles[id] || [];
-      return `<div class="aw">${avatar(charOf(id))}<div><div class="n">${nameOf(id)}${id === top && topN ? '<span class="crownb">KRAL</span>' : ''}</div>
+      return `<div class="aw">${avatar(charOf(id))}<div style="min-width:0;flex:1"><div class="n">${nameOf(id)}${id === top && topN ? '<span class="crownb">KRAL</span>' : ''}</div>
+        ${identHtml(id)}
         <ul>${t.length ? t.map(x => `<li>${esc(x)}</li>`).join('') : '<li>Tertemiz çıktı 😇</li>'}</ul></div></div>`;
     }).join('')}</div>
+    ${lead.length ? `<div class="rule" style="margin-top:22px">Kategori liderleri</div>
+    <div class="glass leaders">${lead.map(l => { const C = CATEGORIES[l.cat]; return `<div class="ld"><span class="ie">${C.e}</span>
+      <div class="lt"><b>${C.ad}</b><small>${C.tepki}</small></div><span class="lav">${l.ids.slice(0, 3).map(id => avatar(charOf(id))).join('')}</span><div class="lw"><b>${l.ids.map(nameOf).join(', ')}</b><small>%${l.rate} · ${l.n} oy${l.ids.length > 1 ? ' · berabere' : ''}</small></div></div>`; }).join('')}</div>` : ''}
     <div style="margin-top:18px;display:grid;gap:10px" id="endCtl"></div>
   </div></section>`;
   rain('🎉', fast ? 20 : 40, 1.5); sfx.fanfare();
