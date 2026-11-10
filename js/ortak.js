@@ -202,7 +202,7 @@ const ME_MENU_CSS = `
 .mm-sw:after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.25s cubic-bezier(.3,1.5,.5,1)}
 .mm-sw.on{background:#FF3D8B}.mm-sw.on:after{left:21px}
 `;
-function mountMeMenu(host, { getChar, getName, onFast, onEdit }) {
+function mountMeMenu(host, { getChar, getName, onFast, onEdit, onLeave, canLeave }) {
   if (!document.getElementById('me-menu-css')) { const st = document.createElement('style'); st.id = 'me-menu-css'; st.textContent = ME_MENU_CSS; document.head.appendChild(st); }
   host.classList.add('memount');
   host.innerHTML = `<button class="mebtn" aria-haspopup="true" aria-expanded="false" aria-label="Ayarlar ve karakterin"></button>
@@ -211,6 +211,7 @@ function mountMeMenu(host, { getChar, getName, onFast, onEdit }) {
       <button class="mm-row" data-k="ses"><span>Ses</span><span class="mm-sw"></span></button>
       <div class="mm-row mm-info"><span>Animasyonlar<small>Yönetici oyun başında seçer</small></span><span class="mm-val"></span></div>
       <button class="mm-row" data-k="edit"><span>Karakterimi düzenle</span><span class="arr">→</span></button>
+      <button class="mm-row hidden" data-k="leave"><span>Odadan çık</span><span class="arr">←</span></button>
     </div>`;
   const btn = host.querySelector('.mebtn'), menu = host.querySelector('.memenu');
   const isOpen = () => !menu.hidden;
@@ -221,6 +222,7 @@ function mountMeMenu(host, { getChar, getName, onFast, onEdit }) {
     menu.querySelector('.mm-who').innerHTML = `${avatar(c)}<div><b>${esc(nm)}</b><small>Ayarlar sadece bu cihazda geçerli</small></div>`;
     menu.querySelector('[data-k="ses"] .mm-sw').classList.toggle('on', !muted);
     menu.querySelector('.mm-val').textContent = fast ? 'Hızlı ⚡' : 'Tam';
+    menu.querySelector('[data-k="leave"]').classList.toggle('hidden', !(canLeave && canLeave()));
   }
   const open = v => { menu.hidden = !v; btn.setAttribute('aria-expanded', v); refresh(); if (v) sfx.soft(); };
   btn.onclick = e => { e.stopPropagation(); open(!isOpen()); };
@@ -229,6 +231,7 @@ function mountMeMenu(host, { getChar, getName, onFast, onEdit }) {
     const r = e.target.closest('.mm-row'); if (!r) return;
     if (r.dataset.k === 'ses') { muted = !muted; try { localStorage.setItem('kd_mute', muted ? '1' : '0'); } catch {} if (!muted) sfx.soft(); }
     if (r.dataset.k === 'edit') { open(false); onEdit && onEdit(); return; }
+    if (r.dataset.k === 'leave') { open(false); onLeave && onLeave(); return; }
     refresh();
   };
   document.addEventListener('click', () => { if (isOpen()) open(false); });

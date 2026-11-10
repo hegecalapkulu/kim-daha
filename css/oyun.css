@@ -398,3 +398,14 @@ h3{font-size:20px;font-weight:500;letter-spacing:-.03em;margin:0}
   .stage{gap:12px}
 }
 @media (max-width:599px) and (orientation:portrait){.stage .pile-label{transform:translate(-50%,30px)}}
+
+/* geri / çık düğmeleri */
+.hleft{display:flex;align-items:center;gap:10px;min-width:0}
+.backbtn{display:inline-flex;align-items:center;justify-content:center;height:34px;padding:0 12px 0 10px;border-radius:99px;border:1px solid var(--glass-b);background:var(--glass);font-size:14px;color:var(--ink-2);white-space:nowrap;transition:background .2s,color .2s}
+.backbtn:hover{background:rgba(255,255,255,.1);color:#fff}
+.backlink{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--ink-2);padding:6px 0;margin-bottom:6px}
+.backlink:hover{color:#fff}
+@media (max-width:480px){.backbtn{height:32px;padding:0 10px 0 8px;font-size:13px}}
+#anonPill{white-space:nowrap}
+.backbtn .long{display:inline}.backbtn .short{display:none}
+@media (max-width:480px){.pill-lock{display:none}.backbtn .long{display:none}.backbtn .short{display:inline}}

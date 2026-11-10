@@ -308,6 +308,8 @@ const meMenu = mountMeMenu($('#meMenu'), {
     if (S && S.phase === 'lobby') { const a = $('.a-me'); a && a.scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(() => $('#nameInp') && $('#nameInp').focus({ preventScroll: true }), 300); }
     else toast(room ? 'Karakterini lobide değiştirebilirsin' : 'Karakterini odaya girince lobide seçersin');
   },
+  canLeave: () => !!room,
+  onLeave: () => askLeave(),
 });
 
 function afterState() {
@@ -322,6 +324,7 @@ function afterState() {
   setFast(S.set.anim === 'hizli');
   meMenu.refresh();
   $('#roomPill').textContent = 'ODA · ' + room; $('#roomPill').classList.remove('hidden');
+  const bb = $('#backBtn'); bb.classList.remove('hidden'); bb.innerHTML = isHost() ? '← <span class="long">Odayı kapat</span><span class="short">Kapat</span>' : '← Çık';
   $('#floaters').classList.add('off');
   const locked = S.phase === 'vote' || S.phase === 'reveal';
   $('#anonPill').innerHTML = ['prep', 'vote', 'reveal'].includes(S.phase) ? ((locked && S.rv ? S.rv.anon : S.set.anon) ? '🔒 Anonim' : '👁 Açık oy') + (locked ? ' <span class="pill-lock">· kilitli</span>' : '') : '';
@@ -333,10 +336,13 @@ function showLoading(msg) {
   view = 'loading'; clearLater();
   app.innerHTML = `<section class="screen"><div class="waiting" style="margin-top:80px;border:0"><span class="dots"><i></i><i></i><i></i></span>${esc(msg)}</div></section>`;
 }
-$('#logo').onclick = () => {
-  if (!room) return;
+function askLeave() {
+  if (!room) return showHome();
   if (confirm(isHost() ? 'Odayı kapatırsan oyun herkes için biter. Emin misin?' : 'Odadan çıkmak istiyor musun?')) leaveRoom();
-};
+}
+$('#logo').onclick = () => { if (room) askLeave(); };
+$('#backBtn').onclick = askLeave;
+function hostBackToLobby() { if (S.phase !== 'mode') return; S.phase = 'lobby'; changed(); }
 
 /* ---------- masa ---------- */
 function seatOrder() { const o = S.order.filter(id => S.players[id]); const i = o.indexOf(ME.id); return i < 0 ? o : [...o.slice(i), ...o.slice(0, i)]; }
@@ -397,7 +403,7 @@ function drawFloaters() {
 }
 function showHome(prefill) {
   view = 'home'; clearLater();
-  $('#floaters').classList.remove('off'); $('#roomPill').classList.add('hidden'); $('#anonPill').textContent = '';
+  $('#floaters').classList.remove('off'); $('#roomPill').classList.add('hidden'); $('#anonPill').textContent = ''; $('#backBtn').classList.add('hidden');
   const code = prefill || normCode(new URLSearchParams(location.search).get('oda'));
   const saved = loadJ('kd2_host');
   const canResume = saved && saved.S && saved.S.phase !== 'closed' && Date.now() - saved.S.ts < 3 * 3600e3;
@@ -409,6 +415,7 @@ function showHome(prefill) {
       <div class="codeboxes" id="codeBoxes">${[0, 1, 2, 3].map(i => `<input maxlength="1" autocapitalize="characters" autocomplete="off" aria-label="${i + 1}. harf" value="${esc(code[i] || '')}">`).join('')}</div>
       <button class="btn w" id="btnJoinGo" ${code.length === 4 ? '' : 'disabled'}>Masaya katıl <span class="arr">→</span></button>
       ${code ? '<button class="btn g sm" id="btnCreate2">ya da yeni oda aç</button>' : ''}
+      <button class="backlink" id="joinBack">← Geri</button>
     </div>
     ${canResume ? `<button class="btn g sm resume" id="btnResume">↩ ${esc(saved.room)} odana geri dön</button>` : ''}
     <p class="foot">Oda kodunu bilen herkes oyunu görebilir, gerçekten özel şeyler yazmayın.</p>
@@ -428,6 +435,7 @@ function showHome(prefill) {
     inp.onkeydown = e => { if (e.key === 'Backspace' && !inp.value && cbs[i - 1]) cbs[i - 1].focus(); if (e.key === 'Enter' && !$('#btnJoinGo').disabled) $('#btnJoinGo').click(); };
   });
   $('#btnJoinGo').onclick = () => { sfx.whoosh(); joinRoom(cbs.map(c => c.value).join('')); };
+  $('#joinBack').onclick = () => { sfx.soft(); setUrl(''); showHome(); };
   if (canResume) $('#btnResume').onclick = () => resumeHost(saved);
 }
 
@@ -527,6 +535,7 @@ update.lobby = () => {
 build.mode = () => {
   app.innerHTML = `<section class="screen"><div class="modewrap">
     ${hostWarnHtml()}
+    ${isHost() ? '<button class="backlink" id="modeBack">← Lobiye dön</button>' : ''}
     <div class="rule">Oyun modu</div>
     <h2>Bu oyunu nasıl <em>oynuyoruz?</em></h2>
     <p class="sub" id="modSub"></p>
@@ -547,6 +556,7 @@ build.mode = () => {
     </div>
     <div style="margin-top:18px" id="modGo"></div>
   </div></section>`;
+  if ($('#modeBack')) $('#modeBack').onclick = () => { sfx.soft(); hostBackToLobby(); };
   $('#modBox').onclick = e => {
     if (!isHost()) return;
     const m = e.target.closest('.mode'), b = e.target.closest('.seg button'), sw = e.target.closest('.sw'), pk = e.target.closest('.pack');
@@ -638,9 +648,11 @@ update.write = () => {
   syncPile(el, S.written.length, `${S.written.length} / ${onlineIds().length} kart`);
   if (S.written.includes(ME.id)) setWriteSent();
   const left = onlineIds().filter(id => !S.written.includes(id));
-  $('#hostWriteCtl').innerHTML = isHost() && S.written.length && left.length
-    ? `<button class="btn g full sm" id="btnNoWait">Yazmayanları bekleme, ${S.written.length} kartla başla</button>` : '';
+  $('#hostWriteCtl').innerHTML = !isHost() ? '' :
+    (S.written.length && left.length ? `<button class="btn g full sm" id="btnNoWait">Yazmayanları bekleme, ${S.written.length} kartla başla</button>` : '') +
+    `<button class="btn g full sm" id="btnEndW" style="margin-top:10px">Oyunu bitir, sonuçlara geç</button>`;
   if ($('#btnNoWait')) $('#btnNoWait').onclick = finishWriting;
+  if ($('#btnEndW')) $('#btnEndW').onclick = () => { if (confirm('Oyun bitsin mi? Sonuç ekranına geçilecek.')) hostEnd(); };
 };
 
 /* ---------- TUR HAZIRLIĞI: deste (ilk tur) ya da kapalı kart ---------- */
