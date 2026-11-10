@@ -298,7 +298,7 @@ function reveal() {
   S.phase = 'reveal'; S.dl = null; changed();
 }
 /* gecenin özeti: tur tur biriken istatistikler.
-   Kimin kime oy verdiğini ele veren sayılar (kendine oy, 2x, sürü/muhalif, karşılıklı) sadece açık oylu turlardan. */
+   Anonim turlar da sayılır: oyun sonunda toplu göründüğü için hangi turda kimin kime verdiği anlaşılmaz (Ege'nin kararı). */
 function trackNight(pairs, pass, win, uni) {
   const N = S.night = S.night || { pass: {}, self: {}, x2: {}, recv: {}, agree: {}, disagree: {}, mutual: {}, time: {}, uni: {}, rounds: 0, open: 0 };
   const inc = (o, k, n = 1) => o[k] = (o[k] || 0) + n;
@@ -307,8 +307,8 @@ function trackNight(pairs, pass, win, uni) {
   pairs.forEach(([, t, w]) => inc(N.recv, t, w));
   Object.entries(H.vt || {}).forEach(([id, ms]) => { const x = N.time[id] = N.time[id] || [0, 0]; x[0] += ms; x[1]++; });
   if (uni) inc(N.uni, win[0]);
-  if (!S.set.anon) {
-    N.open++;
+  {
+    if (!S.set.anon) N.open++;
     const map = Object.fromEntries(pairs.map(p => [p[0], p[1]]));
     pairs.forEach(([f, t, w]) => {
       if (f === t) inc(N.self, f);
@@ -1092,7 +1092,7 @@ function nightHtml() {
   return `<div class="rule">Gecenin özeti</div>
     <div class="night">${cards.map(c => `<div class="nstat"><span class="ne">${c.e}</span><div class="nt">${c.t}</div>
       <div class="nwho"><span class="nav">${c.ids.map(id => avatar(charOf(id))).join('')}</span><b>${names(c)}</b></div><small>${c.text}</small></div>`).join('')}</div>
-    ${N.open < N.rounds ? `<p class="nfoot">Anonim turlar, kimin kime oy verdiğini gösteren sayılara katılmadı.</p>` : ''}`;
+`;
 }
 build.end = () => {
   const ids = seatOrder();
