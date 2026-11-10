@@ -218,7 +218,7 @@ function hostInput(m) {
       if (S.phase !== 'vote' || m.r !== S.r || S.voted.includes(pid)) return;
       if (!m.pass) {
         if (!S.players[m.to]) return;
-        H.votes[pid] = m.to;
+        H.votes[pid] = m.to; H.vt = H.vt || {}; H.vt[pid] = Date.now() - (H.rs || Date.now());   // karar süresi
         S.x2left = S.x2left || {}; H.x2 = H.x2 || {};
         if (m.x2 && S.set.mode === 'hazir' && (S.x2left[pid] || 0) > 0) { H.x2[pid] = true; S.x2left[pid]--; }
       }
@@ -237,7 +237,7 @@ function removePlayer(pid) {
 function hostSet(k, v) { S.set[k] = v; if (k === 'anim') setFast(v === 'hizli'); changed(); }
 function hostToMode() { if (S.order.length < 2) return toast('En az 2 kişi lazım'); S.phase = 'mode'; changed(); }
 function hostModeGo() {
-  S.r = 0; S.titles = {}; S.stats = {}; S.order.forEach(id => S.titles[id] = []);
+  S.r = 0; S.titles = {}; S.stats = {}; S.night = null; S.order.forEach(id => S.titles[id] = []);
   if (S.set.mode === 'hazir') {
     let deck = shuffleArr(paketSorulari(S.set.pack, { baharat: S.set.spicy }).map(x => ({ t: x.soru, cat: x.kat })));
     if (S.set.rounds !== 'hepsi') deck = deck.slice(0, +S.set.rounds);
@@ -264,7 +264,7 @@ function hostStartRound() {
   if (S.phase !== 'prep') return;
   const q = H.deck.shift(); if (!q) return hostAfterDeck();
   S.r++; S.q = q; S.deckLeft = H.deck.length; S.dl = Date.now() + S.set.time * 1000;
-  S.voted = []; H.votes = {}; H.x2 = {}; S.rv = null; S.phase = 'vote'; changed();
+  S.voted = []; H.votes = {}; H.x2 = {}; H.vt = {}; H.rs = Date.now(); S.rv = null; S.phase = 'vote'; changed();
 }
 function maybeReveal() {
   if (!S || S.phase !== 'vote') return;
@@ -291,10 +291,32 @@ function reveal() {
     S.stats = S.stats || {}; const st = S.stats[S.q.cat] = S.stats[S.q.cat] || { total: 0, by: {} };
     st.total += total; Object.entries(counts).forEach(([id, n]) => st.by[id] = (st.by[id] || 0) + n);
   }
+  trackNight(pairs, pass, win, uni);
   S.rv = { counts, seq, sw, win, total, votes: pairs.length, pct: total ? Math.round(max / total * 100) : 0, uni, pass, anon: S.set.anon, pairs: S.set.anon ? null : pairs };
   // paket gerçekten oynandıysa (en az 3 soru ya da paketin tamamı) işaretle
   if (S.set.mode === 'hazir' && S.r >= Math.min(3, S.total) && !played.includes(S.set.pack)) { played.push(S.set.pack); savePlayed(); }
   S.phase = 'reveal'; S.dl = null; changed();
+}
+/* gecenin özeti: tur tur biriken istatistikler.
+   Kimin kime oy verdiğini ele veren sayılar (kendine oy, 2x, sürü/muhalif, karşılıklı) sadece açık oylu turlardan. */
+function trackNight(pairs, pass, win, uni) {
+  const N = S.night = S.night || { pass: {}, self: {}, x2: {}, recv: {}, agree: {}, disagree: {}, mutual: {}, time: {}, uni: {}, rounds: 0, open: 0 };
+  const inc = (o, k, n = 1) => o[k] = (o[k] || 0) + n;
+  N.rounds++;
+  pass.forEach(id => inc(N.pass, id));
+  pairs.forEach(([, t, w]) => inc(N.recv, t, w));
+  Object.entries(H.vt || {}).forEach(([id, ms]) => { const x = N.time[id] = N.time[id] || [0, 0]; x[0] += ms; x[1]++; });
+  if (uni) inc(N.uni, win[0]);
+  if (!S.set.anon) {
+    N.open++;
+    const map = Object.fromEntries(pairs.map(p => [p[0], p[1]]));
+    pairs.forEach(([f, t, w]) => {
+      if (f === t) inc(N.self, f);
+      if (w > 1) inc(N.x2, f);
+      if (win.length === 1 && f !== t) inc(win.includes(t) ? N.agree : N.disagree, f);
+      if (f < t && map[t] === f) inc(N.mutual, f + '|' + t);
+    });
+  }
 }
 function hostNext() { if (S.phase !== 'reveal') return; if (H.deck.length) { S.phase = 'prep'; S.prep = 'card'; S.q = null; S.rv = null; changed(); } else hostAfterDeck(); }
 function hostAfterDeck() { if (S.set.mode === 'kendi') goWrite(); else { S.phase = 'end'; changed(); } }
@@ -1039,6 +1061,39 @@ function categoryIdentity() {
   lead.sort((a, b) => b.rate - a.rate || b.n - a.n);
   return { lead, ident };
 }
+function nightHtml() {
+  const N = S.night; if (!N || !N.rounds) return '';
+  const alive = id => !!S.players[id];
+  const best = (obj, { min = 1, asc = false } = {}) => {
+    const e = Object.entries(obj || {}).filter(([id, v]) => alive(id) && v >= min); if (!e.length) return null;
+    const v = asc ? Math.min(...e.map(x => x[1])) : Math.max(...e.map(x => x[1]));
+    return { ids: e.filter(x => x[1] === v).map(x => x[0]), v };
+  };
+  const cards = [];
+  // herkes eşitse (hepsi aynı değer) o istatistik bir şey anlatmaz, gösterme
+  const add = (e, t, r, val) => { if (r && r.ids.length && r.ids.length < S.order.length) cards.push({ e, t, ids: r.ids.slice(0, 3), text: val(r.v) }); };
+  add('🎯', 'Gecenin hedefi', best(N.recv), r => `${r} oy aldı`);
+  add('🙈', 'Pas ustası', best(N.pass), r => `${r} kez pas geçti`);
+  add('😏', 'Kendine aşık', best(N.self), r => `${r} kez kendine oy verdi`);
+  add('✌️', '2x canavarı', best(N.x2), r => `${r} kez 2x bastı`);
+  const avg = {}; Object.entries(N.time).forEach(([id, [sum, n]]) => { if (n >= 2) avg[id] = Math.round(sum / n / 100) / 10; });
+  if (Object.keys(avg).filter(alive).length >= 2) {
+    const f = best(avg, { min: 0, asc: true }), sl = best(avg, { min: 0 });
+    if (f && sl && f.v !== sl.v) { add('⚡', 'Işık hızı', f, r => `ortalama ${r} sn'de karar verdi`); add('🐢', 'Düşünür', sl, r => `ortalama ${r} sn düşündü`); }
+  }
+  add('🐑', 'Sürüye uyan', best(N.agree, { min: 2 }), r => `${r} kez kazanana oy verdi`);
+  add('🦄', 'Muhalif', best(N.disagree, { min: 2 }), r => `${r} kez ters köşe yaptı`);
+  const mu = best(N.mutual);
+  if (mu) { const [a, b] = mu.ids[0].split('|'); if (alive(a) && alive(b)) cards.push({ e: '💞', t: 'Birbirini gösterenler', ids: [a, b], text: `${mu.v} kez karşılıklı oy`, pair: true }); }
+  add('🙌', 'Oy birliği kurbanı', best(N.uni), r => `${r} kez herkes onu gösterdi`);
+  if (N.rounds >= 3) { const angels = S.order.filter(id => alive(id) && !N.recv[id]); if (angels.length && angels.length < S.order.length) cards.push({ e: '😇', t: 'Masanın meleği', ids: angels.slice(0, 3), text: 'hiç oy almadı' }); }
+  if (!cards.length) return '';
+  const names = c => c.ids.map(nameOf).join(c.pair ? ' ↔ ' : ', ');
+  return `<div class="rule">Gecenin özeti</div>
+    <div class="night">${cards.map(c => `<div class="nstat"><span class="ne">${c.e}</span><div class="nt">${c.t}</div>
+      <div class="nwho"><span class="nav">${c.ids.map(id => avatar(charOf(id))).join('')}</span><b>${names(c)}</b></div><small>${c.text}</small></div>`).join('')}</div>
+    ${N.open < N.rounds ? `<p class="nfoot">Anonim turlar, kimin kime oy verdiğini gösteren sayılara katılmadı.</p>` : ''}`;
+}
 build.end = () => {
   const ids = seatOrder();
   const by = [...ids].sort((a, b) => (S.titles[b] || []).length - (S.titles[a] || []).length);
@@ -1052,6 +1107,7 @@ build.end = () => {
   app.innerHTML = `<section class="screen"><div class="modewrap">
     <div class="endhero">${topN ? avatar(charOf(top)) : ''}<h2>${topN ? `<em>${nameOf(top)}</em>, gecenin yıldızı` : 'Oyun bitti'}</h2>
       <p class="sub">${topN ? topN + ' ünvanla masanın en çok seçileni' : 'Hiç ünvan çıkmadı'}</p></div>
+    ${nightHtml()}
     <div class="rule">Kim neymiş?</div>
     <div class="glass awards" style="padding:4px 16px">${by.map(id => {
       const t = S.titles[id] || [];

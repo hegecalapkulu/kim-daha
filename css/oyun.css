@@ -444,3 +444,16 @@ h3{font-size:20px;font-weight:500;letter-spacing:-.03em;margin:0}
   .card .nm{font-size:13px}.card .tick{width:22px;height:22px;top:5px;right:5px}
 }
 .ld .lav{display:flex;flex:none}.ld .lav svg{margin-left:-10px}.ld .lav svg:first-child{margin-left:0}
+
+/* gecenin özeti */
+.night{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:22px}
+@media (min-width:700px){.night{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.nstat{border:1px solid var(--glass-b);border-radius:12px;background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.02));padding:12px;min-width:0;animation:stepIn .5s both}
+.nstat:nth-child(2){animation-delay:.08s}.nstat:nth-child(3){animation-delay:.16s}.nstat:nth-child(4){animation-delay:.24s}.nstat:nth-child(5){animation-delay:.32s}.nstat:nth-child(n+6){animation-delay:.4s}
+.nstat .ne{font-size:24px;line-height:1}
+.nstat .nt{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--pink);margin:8px 0 6px}
+.nstat .nwho{display:flex;align-items:center;gap:6px;min-width:0}
+.nstat .nav{display:flex;flex:none}.nstat .nav svg{width:26px;height:26px;margin-left:-8px}.nstat .nav svg:first-child{margin-left:0}
+.nstat .nwho b{font-weight:500;font-size:15px;letter-spacing:-.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nstat small{display:block;font-size:12px;color:var(--ink-2);margin-top:4px;line-height:1.35}
+.nfoot{font-size:12px;color:var(--ink-3);margin:-12px 0 18px}

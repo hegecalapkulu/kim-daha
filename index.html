@@ -15,7 +15,7 @@
 <script>
 /* Sürüm kontrolü: GitHub Pages dosyaları 10 dk önbellekte tutar. Yeni sürüm yayındaysa
    sayfa kendini yeni sürümün adresiyle (önbelleği aşarak) yeniden açar. */
-window.SURUM = '20261110230139';
+window.SURUM = '20261110233603';
 fetch('surum.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json()).then(d => {
   if (!d || !d.v || d.v === window.SURUM) return;
   const u = new URL(location.href);
@@ -23,7 +23,7 @@ fetch('surum.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json()).t
   u.searchParams.set('v', d.v); location.replace(u.toString());
 }).catch(() => {});
 </script>
-<link rel="stylesheet" href="css/oyun.css?v=20261110230139">
+<link rel="stylesheet" href="css/oyun.css?v=20261110233603">
 </head>
 <body>
 <div class="bg"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
@@ -38,10 +38,10 @@ fetch('surum.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json()).t
 </div>
 <div class="toast" id="toast"></div>
 <script>window.SES_YOLU = 'ses/';</script>
-<script src="vendor/mqtt.min.js?v=20261110230139"></script>
-<script src="vendor/qrcode.min.js?v=20261110230139"></script>
-<script src="js/ortak.js?v=20261110230139"></script>
-<script src="js/sorular.js?v=20261110230139"></script>
-<script src="js/oyun.js?v=20261110230139"></script>
+<script src="vendor/mqtt.min.js?v=20261110233603"></script>
+<script src="vendor/qrcode.min.js?v=20261110233603"></script>
+<script src="js/ortak.js?v=20261110233603"></script>
+<script src="js/sorular.js?v=20261110233603"></script>
+<script src="js/oyun.js?v=20261110233603"></script>
 </body>
 </html>
